@@ -70,6 +70,20 @@ header p {
   min-height: 44px;
 }
 .header-collapse-btn:hover { background: rgba(96,165,250,0.25); }
+.header-help-btn {
+  flex: 0 0 auto;
+  background: rgba(148,163,184,0.12);
+  border: 1px solid rgba(148,163,184,0.3);
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 8px 14px;
+  white-space: nowrap;
+  min-height: 44px;
+}
+.header-help-btn:hover { color: var(--text); border-color: var(--text-muted); }
 .header-btn-group {
   display: flex;
   flex: 0 0 auto;
@@ -878,6 +892,148 @@ nav button.active {
 }
 .fuel-rate-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 2px; }
 .fuel-rate-val   { font-size: 0.82rem; font-weight: 600; }
+
+/* ── Welcome banner ── */
+.welcome-banner {
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.35);
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.welcome-body { flex: 1; }
+.welcome-title { font-size: 0.9rem; font-weight: 700; color: var(--accent2); margin-bottom: 4px; }
+.welcome-sub { font-size: 0.73rem; color: var(--text-muted); line-height: 1.5; }
+.welcome-dismiss {
+  flex: 0 0 auto;
+  background: rgba(16,185,129,0.2);
+  border: 1px solid rgba(16,185,129,0.4);
+  border-radius: 6px;
+  color: var(--accent2);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+
+/* ── Quick Start card ── */
+.qs-card { padding: 14px; }
+.qs-collapsed-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+}
+.qs-collapsed-bar span { font-size: 0.82rem; font-weight: 700; color: var(--accent); }
+.qs-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.qs-header h2 { margin-bottom: 0; }
+.qs-toggle-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+.qs-toggle-btn:hover { color: var(--accent); border-color: var(--accent); }
+.qs-list {
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+}
+.qs-list li { font-size: 0.82rem; line-height: 1.4; }
+.qs-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 3px; line-height: 1.5; }
+
+/* ── What am I looking at ── */
+.what-card { padding: 0; overflow: hidden; }
+.what-summary {
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 12px 14px;
+  list-style: none;
+  user-select: none;
+}
+.what-summary::-webkit-details-marker { display: none; }
+.what-summary::before { content: '▸ '; }
+details[open] .what-summary::before { content: '▾ '; }
+.what-list {
+  padding: 0 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--border);
+}
+.what-list dt { font-size: 0.78rem; font-weight: 700; color: var(--text); margin-top: 6px; }
+.what-list dd { font-size: 0.73rem; color: var(--text-muted); margin: 0; line-height: 1.5; }
+
+/* ── Recommended Workflows ── */
+.wf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+@media (max-width: 400px) { .wf-grid { grid-template-columns: 1fr; } }
+.wf-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+}
+.wf-icon { font-size: 1.3rem; margin-bottom: 4px; }
+.wf-title { font-size: 0.78rem; font-weight: 700; margin-bottom: 6px; }
+.wf-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--border);
+}
+.wf-row:last-of-type { border-bottom: none; }
+.wf-row span:first-child { color: var(--text-muted); }
+.wf-row span:last-child { font-weight: 600; }
+.wf-note { font-size: 0.67rem; color: var(--text-muted); margin-top: 6px; line-height: 1.4; }
+
+/* ── Preset description ── */
+.preset-desc {
+  font-size: 0.73rem;
+  color: var(--text-muted);
+  width: 100%;
+  margin-bottom: 6px;
+  line-height: 1.5;
+  flex: 0 0 100%;
+}
+.preset-combo-row { flex-wrap: wrap; }
+
+/* ── Help modal ── */
+.help-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.help-list dt {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-top: 12px;
+  margin-bottom: 3px;
+}
+.help-list dd {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.6;
+}
 
 /* ── Fuel Tracker Tab ── */
 .ft-sub { font-size: 0.73rem; color: var(--text-muted); line-height: 1.5; }

@@ -134,3 +134,25 @@ Token is short-lived — user will provide a fresh one.
 - **Mobile-first** — target is iPhone Safari as an installed PWA. All touch targets ≥ 44px. Safe area insets in header.
 - **localStorage only** — no backend, no accounts, no cloud sync.
 - **Single file logic** — all JS in `app.js`. Don't split into modules unless the file becomes unmanageable (currently ~1,700 lines).
+
+---
+
+## Onboarding & UX Additions (June 2026)
+
+### Welcome Banner
+Shown once to first-time users at the top of the Live Fuel Tracker tab. Green dismissible card with rig summary and recommended workflow. Dismissed state stored in `state.welcomeDismissed` (localStorage).
+
+### Quick Start Card
+Collapsible card below the welcome banner. Expanded by default. Shows 4-step numbered workflow. Hide/Show button toggles `state.quickStartCollapsed` (localStorage).
+
+### What am I looking at?
+`<details>` collapsible card with definitions of Active Fuel Source, Reserve Fuel, Combined Runtime, Overnight Confidence, and the two confidence columns.
+
+### Recommended Workflows
+5-card grid (2 columns on mobile): Daytime Cooling, Overnight Cooling, Morning Coffee, Microwave Cooking, Hair Dryer. Each shows preset name, fuel recommendation, and a practical note.
+
+### Preset Descriptions
+`BUILT_IN_PRESETS` now has a `description` field. Shown as a full-width line above the chip row in the Calculator tab's Quick Presets card.
+
+### Help Button
+Small grey button in the header (leftmost). Opens a bottom-sheet modal with 7 Q&A entries covering all major features.

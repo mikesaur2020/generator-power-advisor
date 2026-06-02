@@ -73,22 +73,32 @@ const BUILT_IN_PRESETS = [
   {
     id: 'normal-ac', name: 'Normal A/C', builtIn: true, battery: 'full', elevation: 1400,
     appliances: makeAppliances(['ac_cool','fridge','starlink','usb','tv','leds']),
+    description: 'Typical daytime camping setup. A/C cooling on, all core appliances running.',
+    workflow: '☀️ Daytime Cooling',
   },
   {
     id: 'microwave', name: 'Microwave', builtIn: true, battery: 'full', elevation: 1400,
     appliances: makeAppliances(['ac_fan','fridge','starlink','usb','tv','micro','leds']),
+    description: 'A/C switched to Fan Only to free up power for the microwave. Use one high-load appliance at a time.',
+    workflow: '🍳 Cooking',
   },
   {
     id: 'coffee', name: 'Coffee Time', builtIn: true, battery: 'full', elevation: 1400,
     appliances: makeAppliances(['ac_fan','fridge','starlink','usb','tv','coffee','leds']),
+    description: 'A/C switched to Fan Only for morning coffee. Temporary — switch back to A/C Cooling after.',
+    workflow: '☕ Morning',
   },
   {
     id: 'hairdryer', name: 'Hair Dryer', builtIn: true, battery: 'full', elevation: 1400,
     appliances: makeAppliances(['ac_fan','fridge','starlink','usb','hairdryer','leds']),
+    description: 'A/C switched to Fan Only to run the hair dryer. Temporary — switch back to A/C Cooling after.',
+    workflow: '💨 Grooming',
   },
   {
     id: 'overnight', name: 'Overnight', builtIn: true, battery: 'full', elevation: 1400,
     appliances: makeAppliances(['ac_cool','fridge','starlink','leds']),
+    description: 'Minimal overnight load. TV and USB charging off for longer runtime while sleeping.',
+    workflow: '🌙 Overnight',
   },
 ];
 
@@ -103,6 +113,8 @@ const state = {
   userPresets: [],
   hiddenBuiltIns: [],
   activePresetId: 'normal-ac',
+  quickStartCollapsed: false,
+  welcomeDismissed: false,
   fuelTracker: {
     gas:  { active: false, startMs: null, startGal: 1.5 },
     prop: { active: false, startMs: null, startLb:  20  },
@@ -134,6 +146,8 @@ function loadState() {
     if (saved.activePresetId !== undefined) state.activePresetId = saved.activePresetId;
     if (saved.fuelTracker) Object.assign(state.fuelTracker, saved.fuelTracker);
     if (saved.ft) Object.assign(state.ft, saved.ft);
+    if (saved.quickStartCollapsed != null) state.quickStartCollapsed = saved.quickStartCollapsed;
+    if (saved.welcomeDismissed != null)    state.welcomeDismissed    = saved.welcomeDismissed;
   } catch (_) {}
 }
 
@@ -150,6 +164,8 @@ function saveState() {
     activePresetId: state.activePresetId,
     fuelTracker: state.fuelTracker,
     ft: state.ft,
+    quickStartCollapsed: state.quickStartCollapsed,
+    welcomeDismissed:    state.welcomeDismissed,
   }));
 }
 
@@ -1275,7 +1291,9 @@ function renderPresetButtons() {
   if (!combo) return;
   const active = getAllPresets().find(p => p.id === state.activePresetId);
   if (active) {
-    combo.innerHTML = presetComboChips(active);
+    const desc = active.description
+      ? `<p class="preset-desc">${active.description}</p>` : '';
+    combo.innerHTML = desc + presetComboChips(active);
     combo.style.display = 'flex';
   } else {
     combo.style.display = 'none';
@@ -1458,6 +1476,105 @@ function stopFtTickTimer() {
   if (ftTickInterval) { clearInterval(ftTickInterval); ftTickInterval = null; }
 }
 
+// ── Onboarding helpers ────────────────────────────────────────────────────────
+function dismissWelcome() {
+  state.welcomeDismissed = true;
+  saveState();
+  const el = document.getElementById('welcome-banner');
+  if (el) el.style.display = 'none';
+}
+
+function toggleQuickStart() {
+  state.quickStartCollapsed = !state.quickStartCollapsed;
+  saveState();
+  renderFuelTrackerTab();
+}
+
+function openHelp() {
+  document.getElementById('help-modal').style.display = 'flex';
+}
+function closeHelp() {
+  document.getElementById('help-modal').style.display = 'none';
+}
+
+function buildQuickStartCard() {
+  if (state.quickStartCollapsed) {
+    return `<div class="card qs-collapsed-bar">
+      <span>🚐 Quick Start</span>
+      <button class="qs-toggle-btn" onclick="toggleQuickStart()">Show</button>
+    </div>`;
+  }
+  return `
+    <div class="card qs-card">
+      <div class="qs-header">
+        <h2>🚐 Quick Start</h2>
+        <button class="qs-toggle-btn" onclick="toggleQuickStart()">Hide</button>
+      </div>
+      <ol class="qs-list">
+        <li>
+          <strong>Choose a preset on the Calculator tab</strong>
+          <div class="qs-sub">Normal A/C · Overnight · Microwave · Coffee Time · Hair Dryer</div>
+        </li>
+        <li>
+          <strong>Return here to check runtime</strong>
+          <div class="qs-sub">See Active Fuel Source, Runtime Remaining, and Overnight Confidence below.</div>
+        </li>
+        <li>
+          <strong>For high-load appliances — switch A/C to Fan Only first</strong>
+          <div class="qs-sub">Applies to: Microwave, Toaster, Coffee Maker, Hair Dryer, Clothes Iron.<br>
+          The presets above do this automatically.</div>
+        </li>
+        <li>
+          <strong>Use Fuel Burn Reference for planning</strong>
+          <div class="qs-sub">Static tables showing burn rates at different loads.</div>
+        </li>
+      </ol>
+    </div>`;
+}
+
+function buildWhatAmICard() {
+  return `
+    <details class="card what-card">
+      <summary class="what-summary">❓ What am I looking at?</summary>
+      <dl class="what-list">
+        <dt>Active Fuel Source</dt>
+        <dd>The fuel the generator is currently consuming. When propane is connected it is always active.</dd>
+        <dt>Reserve Fuel</dt>
+        <dd>Gasoline — available only after you manually disconnect the LPG hose. It is not being consumed while propane is connected.</dd>
+        <dt>Combined Runtime</dt>
+        <dd>Maximum potential runtime if you use propane first, then manually switch to gasoline. Requires a manual 4-step transition — the generator will not switch automatically.</dd>
+        <dt>Overnight Confidence</dt>
+        <dd>An estimate of whether fuel will last through the night. High ✅ = 10+ hrs, Moderate ⚠️ = 6–10 hrs, Low ❌ = under 6 hrs.</dd>
+        <dt>Propane Only vs Combined</dt>
+        <dd>Two separate confidence values: one assuming propane only, one assuming the manual propane→gasoline switch is made.</dd>
+      </dl>
+    </details>`;
+}
+
+function buildWorkflowsCard() {
+  const workflows = [
+    { icon: '☀️', title: 'Daytime Cooling', preset: 'Normal A/C', fuel: 'Either fuel', note: 'Maximum cooling. Highest generator load. Best used on gasoline for full capacity.' },
+    { icon: '🌙', title: 'Overnight Cooling', preset: 'Overnight', fuel: 'Propane recommended', note: 'Lower load. Propane gives ~7 hrs on a 20 lb tank at this load. <strong>Generator will not auto-switch to gasoline if propane runs out.</strong>' },
+    { icon: '☕', title: 'Morning Coffee', preset: 'Coffee Time', fuel: 'Either fuel', note: 'Switch A/C to Fan Only first — the preset does this automatically. Temporary; switch back after.' },
+    { icon: '🍳', title: 'Microwave Cooking', preset: 'Microwave', fuel: 'Either fuel', note: 'Switch A/C to Fan Only first — the preset does this automatically. One high-load appliance at a time.' },
+    { icon: '💨', title: 'Hair Dryer', preset: 'Hair Dryer', fuel: 'Either fuel', note: 'Switch A/C to Fan Only first — the preset does this automatically. Temporary; switch back after.' },
+  ];
+  return `
+    <div class="card">
+      <h2>⭐ Recommended Workflows</h2>
+      <div class="wf-grid">
+        ${workflows.map(w => `
+          <div class="wf-card">
+            <div class="wf-icon">${w.icon}</div>
+            <div class="wf-title">${w.title}</div>
+            <div class="wf-row"><span>Preset</span><span>${w.preset}</span></div>
+            <div class="wf-row"><span>Fuel</span><span>${w.fuel}</span></div>
+            <p class="wf-note">${w.note}</p>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
 function ftComboGuidance(propane, gas) {
   if (propane && gas) return `
     <div class="ft-combo-header ft-combo-both">
@@ -1542,6 +1659,26 @@ function renderFuelTrackerTab() {
     : '<span class="ft-src-none">⚠️ No Fuel Source</span>';
 
   panel.innerHTML = `
+    <!-- Welcome banner (first-time only) -->
+    ${!state.welcomeDismissed ? `
+    <div class="welcome-banner" id="welcome-banner">
+      <div class="welcome-body">
+        <div class="welcome-title">👋 Welcome to Mike's Camper Power Calculator</div>
+        <p class="welcome-sub">Built for the 2025 Coachmen Apex 28RBS · WEN DF360iX · GE 15,000 BTU A/C · Starlink Mini · 300W solar</p>
+        <p class="welcome-sub" style="margin-top:4px;"><strong>Recommended workflow:</strong> Choose a preset on the <em>Calculator</em> tab, then come back here to check runtime.</p>
+      </div>
+      <button class="welcome-dismiss" onclick="dismissWelcome()">Got it ✓</button>
+    </div>` : ''}
+
+    <!-- Quick Start -->
+    ${buildQuickStartCard()}
+
+    <!-- What am I looking at -->
+    ${buildWhatAmICard()}
+
+    <!-- Recommended Workflows -->
+    ${buildWorkflowsCard()}
+
     <!-- Fuel Configuration -->
     <div class="card">
       <h2>Fuel Configuration</h2>
@@ -1727,6 +1864,10 @@ window.setBattery = setBattery;
 window.setChargeStrategy = setChargeStrategy;
 window.startFuelTracker = startFuelTracker;
 window.stopFuelTracker  = stopFuelTracker;
+window.dismissWelcome   = dismissWelcome;
+window.toggleQuickStart = toggleQuickStart;
+window.openHelp         = openHelp;
+window.closeHelp        = closeHelp;
 window.setFtPropane     = setFtPropane;
 window.setFtGas         = setFtGas;
 window.ftStartTracking  = ftStartTracking;

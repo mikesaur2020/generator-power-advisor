@@ -20,6 +20,7 @@
         <p>WEN DF360iX · Coachmen Apex 28RBS · Generator-only camping</p>
       </div>
       <div class="header-btn-group">
+        <button class="header-help-btn" onclick="openHelp()">Help</button>
         <button class="header-manage-btn" onclick="openManagePresets()">Manage Presets</button>
         <button class="header-collapse-btn" onclick="collapseAll()">Collapse All</button>
       </div>
@@ -85,6 +86,32 @@
           <button class="modal-save-btn" onclick="submitSavePreset()">Save</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div id="help-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeHelp()">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>Help</h2>
+        <button class="modal-close-btn" onclick="closeHelp()">✕</button>
+      </div>
+      <dl class="help-list">
+        <dt>What is the Live Fuel Tracker?</dt>
+        <dd>The primary tab. It tells you how long you can run on your current fuel, which fuel is active, and whether you'll make it through the night.</dd>
+        <dt>What is Fuel Burn Reference?</dt>
+        <dd>Static tables showing estimated burn rates at different load levels. Use it for trip planning — not for live tracking.</dd>
+        <dt>How does Auto Fuel Selection work?</dt>
+        <dd>The WEN DF360iX automatically uses propane when connected. Gasoline is reserve. The generator will <strong>not</strong> automatically switch to gasoline if propane runs out — you must disconnect the LPG hose and restart.</dd>
+        <dt>Why switch A/C to Fan Only?</dt>
+        <dd>A/C Cooling draws ~1,700W. Microwave/toaster/coffee maker/hair dryer each draw 1,000–1,500W. Running both at once exceeds the generator's capacity. Switching A/C to Fan Only (250W) frees up ~1,450W for the high-load appliance.</dd>
+        <dt>How is Overnight Confidence calculated?</dt>
+        <dd>Based on estimated runtime at the current load. High ✅ = 10+ hrs, Moderate ⚠️ = 6–10 hrs, Low ❌ = less than 6 hrs. Two values are shown: Propane Only (conservative) and Combined (if you manually switch to gasoline after propane).</dd>
+        <dt>What is Combined Runtime?</dt>
+        <dd>Propane runtime + gasoline reserve runtime. Only achievable if you manually disconnect the LPG hose after propane runs out, then restart the generator.</dd>
+        <dt>What does the Calculator tab do?</dt>
+        <dd>Shows the exact generator load based on which appliances are on. Use it to verify the load before checking Fuel Tracker runtime.</dd>
+      </dl>
     </div>
   </div>
 
