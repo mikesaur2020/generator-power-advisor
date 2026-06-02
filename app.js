@@ -244,7 +244,6 @@ function buildCalculatorHTML() {
     <div class="strategy-note">
       <div class="strategy-header">
         <h2>Recommended Operating Strategy</h2>
-        <button class="collapse-all-btn" onclick="collapseAll()">Collapse All</button>
       </div>
       <p><strong>Normal mode:</strong> A/C Cooling + Refrigerator + Starlink + USB + TV</p>
       <p><strong>Temporary high-load mode:</strong> Switch A/C to Fan Only before running microwave, toaster, coffee maker, hair dryer, or clothes iron.</p>

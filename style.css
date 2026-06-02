@@ -34,6 +34,12 @@ header {
   top: 0;
   z-index: 100;
 }
+.header-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
 header h1 {
   font-size: 1.05rem;
   font-weight: 700;
@@ -45,6 +51,20 @@ header p {
   color: var(--text-muted);
   margin-top: 1px;
 }
+.header-collapse-btn {
+  flex: 0 0 auto;
+  background: rgba(96,165,250,0.15);
+  border: 1px solid rgba(96,165,250,0.4);
+  border-radius: 6px;
+  color: #60a5fa;
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+.header-collapse-btn:hover { background: rgba(96,165,250,0.25); }
 
 /* ── Tabs ── */
 nav {
