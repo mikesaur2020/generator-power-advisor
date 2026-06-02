@@ -254,25 +254,30 @@ function buildCalculatorHTML() {
     </div>
 
     <!-- Results -->
-    <div class="card">
-      <h2>Generator Load Summary</h2>
-      <div class="results-grid">
-        <div class="result-block">
-          <div class="result-label">Running Load</div>
-          <div class="result-value accent" id="res-running">—</div>
-        </div>
-        <div class="result-block">
-          <div class="result-label">Largest Surge</div>
-          <div class="result-value" id="res-surge">—</div>
-        </div>
-        <div class="result-block full-width">
-          <div class="result-label">Estimated Peak Load</div>
-          <div class="result-value accent" id="res-peak">—</div>
-          <div class="result-sub">Running + largest startup surge</div>
-        </div>
-        <div class="result-block full-width">
-          <div class="result-label">Battery Charging Load Included</div>
-          <div class="result-value" id="res-batt">—</div>
+    <div class="card collapsible-card">
+      <h2 class="collapsible-heading" onclick="toggleSection('summary-detail', this)">
+        Generator Load Summary <span class="collapse-icon">▾</span>
+      </h2>
+
+      <div id="summary-detail">
+        <div class="results-grid">
+          <div class="result-block">
+            <div class="result-label">Running Load</div>
+            <div class="result-value accent" id="res-running">—</div>
+          </div>
+          <div class="result-block">
+            <div class="result-label">Largest Surge</div>
+            <div class="result-value" id="res-surge">—</div>
+          </div>
+          <div class="result-block full-width">
+            <div class="result-label">Estimated Peak Load</div>
+            <div class="result-value accent" id="res-peak">—</div>
+            <div class="result-sub">Running + largest startup surge</div>
+          </div>
+          <div class="result-block full-width">
+            <div class="result-label">Battery Charging Load Included</div>
+            <div class="result-value" id="res-batt">—</div>
+          </div>
         </div>
       </div>
 
