@@ -117,12 +117,28 @@ header p {
 }
 .preset-combo-row {
   margin-top: 10px;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  line-height: 1.6;
-  padding: 8px 10px;
+  padding: 10px 12px;
   background: var(--surface2);
-  border-radius: 6px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.preset-combo-chip {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+.preset-combo-chip.chip-meta {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-style: italic;
 }
 .modal-restore-btn {
   background: none;

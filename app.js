@@ -859,11 +859,17 @@ function getAllPresets() {
   return [...visible, ...state.userPresets];
 }
 
-function presetComboText(preset) {
-  const on = APPLIANCES.filter(a => preset.appliances[a.id]).map(a => a.name);
+function presetComboChips(preset) {
   const battLabels = { full: 'Full battery', partial: 'Partial battery', heavy: 'Heavy battery' };
   const elevLabel = ELEV_LABELS[preset.elevation] || `${preset.elevation.toLocaleString()} ft`;
-  return [...on, battLabels[preset.battery], elevLabel].join(' · ');
+  const appChips = APPLIANCES
+    .filter(a => preset.appliances[a.id])
+    .map(a => `<span class="preset-combo-chip">${a.name}</span>`)
+    .join('');
+  const metaChips = [battLabels[preset.battery], elevLabel]
+    .map(t => `<span class="preset-combo-chip chip-meta">${t}</span>`)
+    .join('');
+  return appChips + metaChips;
 }
 
 function renderPresetButtons() {
@@ -877,8 +883,8 @@ function renderPresetButtons() {
   if (!combo) return;
   const active = getAllPresets().find(p => p.id === state.activePresetId);
   if (active) {
-    combo.textContent = presetComboText(active);
-    combo.style.display = 'block';
+    combo.innerHTML = presetComboChips(active);
+    combo.style.display = 'flex';
   } else {
     combo.style.display = 'none';
   }
