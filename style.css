@@ -242,6 +242,11 @@ nav button.active {
   margin-top: 2px;
 }
 
+.ac-divider {
+  border-top: 1px dashed var(--border);
+  margin: 6px 0;
+}
+
 /* ── Collapsible cards ── */
 .collapsible-heading {
   cursor: pointer;

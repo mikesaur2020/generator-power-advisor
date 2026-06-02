@@ -326,16 +326,12 @@ function buildCalculatorHTML() {
         Always-On Group <span class="collapse-icon">▾</span>
       </h2>
       <div id="always-body">
+        ${acAlt.map(buildApplianceRow).join('')}
+        <div class="ac-divider"></div>
         ${always.map(buildApplianceRow).join('')}
-      </div>
-    </div>
-
-    <!-- A/C alternate -->
-    <div class="card">
-      <h2>A/C Alternate Mode</h2>
-      ${acAlt.map(buildApplianceRow).join('')}
-      <div class="warn-note" id="ac-warn" style="display:none">
-        ⚠️ A/C Cooling is active. Turn it off before enabling Fan Only.
+        <div class="warn-note" id="ac-warn" style="display:none">
+          ⚠️ A/C Cooling is active. Turn it off before enabling Fan Only.
+        </div>
       </div>
     </div>
 
