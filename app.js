@@ -869,7 +869,12 @@ function renderFuelTracker() {
         </div>
         <button class="tracker-stop-btn" onclick="stopFuelTracker('gas')">⏹ Stop Gas Tracker</button>`;
     } else {
-      gasEl.innerHTML = `<p class="tracker-idle">Not running. Use a start button above.</p>`;
+      gasEl.innerHTML = `
+        <p class="tracker-idle">Not running.</p>
+        <button class="tracker-start-btn tracker-gas-btn tracker-card-start-btn" onclick="startFuelTracker('gas')">
+          ⛽ Start Gas Tracker
+          <span class="tracker-btn-sub">Full 1.5 gal tank</span>
+        </button>`;
     }
   }
 
@@ -909,7 +914,12 @@ function renderFuelTracker() {
         </div>
         <button class="tracker-stop-btn" onclick="stopFuelTracker('prop')">⏹ Stop Propane Tracker</button>`;
     } else {
-      propEl.innerHTML = `<p class="tracker-idle">Not running. Use a start button above.</p>`;
+      propEl.innerHTML = `
+        <p class="tracker-idle">Not running.</p>
+        <button class="tracker-start-btn tracker-prop-btn tracker-card-start-btn" onclick="startFuelTracker('prop')">
+          🔵 Start Propane Tracker
+          <span class="tracker-btn-sub">Full 20 lb tank</span>
+        </button>`;
     }
   }
 

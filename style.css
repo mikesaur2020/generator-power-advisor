@@ -753,6 +753,7 @@ nav button.active {
   width: 100%;
 }
 .tracker-start-btn:hover { opacity: 0.88; }
+.tracker-card-start-btn { padding: 10px 12px; margin-top: 8px; }
 .tracker-btn-sub {
   font-size: 0.72rem;
   font-weight: 400;
