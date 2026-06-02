@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f59e0b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CamperPower">
+  <meta name="description" content="WEN DF360iX + Coachmen Apex 28RBS generator load calculator for generator-only camping.">
+  <title>Camper Power Calculator</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>⚡ Camper Power Calculator</h1>
+    <p>WEN DF360iX · Coachmen Apex 28RBS · Generator-only camping</p>
+  </header>
+
+  <nav>
+    <button id="tab-calc"    class="active" onclick="showTab('calc')">Calculator</button>
+    <button id="tab-tests"   onclick="showTab('tests')">Real-World Tests</button>
+    <button id="tab-fuel"    onclick="showTab('fuel')">Fuel Burn</button>
+    <button id="tab-ambient" onclick="showTab('ambient')">Ambient &amp; A/C</button>
+    <button id="tab-about"   onclick="showTab('about')">About</button>
+  </nav>
+
+  <main>
+    <div id="panel-calc"    class="tab-panel active"></div>
+
+    <div id="panel-tests"   class="tab-panel">
+      <div class="card">
+        <h2>Real-World Tested Combinations</h2>
+        <p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:12px;">
+          Track what actually works on your WEN DF360iX. Real observations override estimates.
+          Data stored locally on this device.
+        </p>
+        <div class="tests-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="min-width:200px">Loads / Combination</th>
+                <th>✓ Gas</th>
+                <th>✓ Propane</th>
+                <th style="min-width:160px">Notes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tests-tbody"></tbody>
+          </table>
+        </div>
+        <button class="add-row-btn" onclick="addTest()">+ Add Row</button>
+      </div>
+    </div>
+
+    <div id="panel-fuel"    class="tab-panel"></div>
+    <div id="panel-ambient" class="tab-panel"></div>
+    <div id="panel-about"   class="tab-panel"></div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
