@@ -879,6 +879,91 @@ nav button.active {
 .fuel-rate-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 2px; }
 .fuel-rate-val   { font-size: 0.82rem; font-weight: 600; }
 
+/* ── Fuel Tracker Tab ── */
+.ft-sub { font-size: 0.73rem; color: var(--text-muted); line-height: 1.5; }
+.ft-config-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 12px 0;
+}
+.ft-config-item { display: flex; flex-direction: column; gap: 6px; }
+.ft-config-label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.ft-toggle-pair { display: flex; gap: 6px; }
+.ft-opt-btn {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 7px 4px;
+  transition: all 0.15s;
+}
+.ft-opt-btn.active { background: rgba(245,158,11,0.15); border-color: var(--accent); color: var(--accent); }
+.ft-active-source {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-top: 4px;
+}
+.ft-active-label { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.ft-active-value { font-size: 1rem; font-weight: 700; }
+.ft-src-propane { color: #c4b5fd; }
+.ft-src-gas     { color: #93c5fd; }
+.ft-src-none    { color: var(--warn); }
+.ft-no-fuel { background: rgba(249,115,22,0.1); border: 1px solid rgba(249,115,22,0.3); border-radius: 8px; color: #fb923c; font-size: 0.75rem; margin-top: 8px; padding: 8px 12px; }
+
+.ft-load-card { text-align: center; }
+.ft-big-stat { font-size: 2rem; font-weight: 700; color: var(--accent); }
+.ft-load-changed { background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.3); border-radius: 6px; color: #93c5fd; font-size: 0.72rem; margin-top: 10px; padding: 7px 10px; }
+
+.ft-runtime-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+@media (max-width: 400px) { .ft-runtime-grid { grid-template-columns: 1fr; } }
+.ft-runtime-card { padding: 12px; }
+.ft-active-card { border-color: var(--accent); }
+.ft-fuel-heading { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.ft-runtime-val { font-size: 1.6rem; font-weight: 700; margin-bottom: 2px; }
+.ft-runtime-sub { font-size: 0.68rem; color: var(--text-muted); margin-bottom: 8px; }
+.ft-empty-row { display: flex; justify-content: space-between; font-size: 0.75rem; padding: 4px 0; border-bottom: 1px solid var(--border); }
+.ft-empty-row:last-child { border-bottom: none; }
+.ft-empty-row span:first-child { color: var(--text-muted); }
+.ft-empty-row span:last-child { font-weight: 600; }
+.ft-combined-row span:last-child { color: var(--accent); }
+
+.ft-green  { color: var(--good); }
+.ft-yellow { color: var(--accent); }
+.ft-red    { color: var(--over); }
+
+.ft-combined-val { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+
+.ft-conf-card { border-width: 2px; }
+.ft-conf-high { border-color: var(--good); }
+.ft-conf-mid  { border-color: var(--accent); }
+.ft-conf-low  { border-color: var(--over); }
+.ft-conf-badge { font-size: 1.1rem; font-weight: 700; margin: 8px 0 4px; }
+.ft-conf-desc  { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px; }
+.ft-conf-detail { border-top: 1px solid var(--border); padding-top: 10px; }
+
+.ft-tracking-active { display: flex; flex-direction: column; gap: 0; }
+.ft-tracking-btns { display: flex; gap: 8px; margin-top: 12px; }
+.ft-reset-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 5px 14px;
+}
+.ft-reset-btn:hover { color: var(--accent); border-color: var(--accent); }
+
 /* ── Real-World Tests ── */
 .tests-table-wrap { overflow-x: auto; }
 table {

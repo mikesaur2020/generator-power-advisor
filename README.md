@@ -6,7 +6,13 @@ A static Progressive Web App (PWA) for generator-only camping with the **WEN DF3
 
 Replaces an Excel workbook with an installable, offline-capable iPhone-friendly PWA. Calculates generator running load, startup surge, peak load, and fuel/propane status for any combination of RV appliances.
 
-**Key features:**
+**Key features (new: Fuel Tracker tab):**
+- Auto Fuel Selection: models WEN DF360iX propane-first behavior
+- Overnight Confidence indicator (High / Moderate / Low based on runtime)
+- Combined propane + gasoline runtime with manual switchover note
+- Session tracking with elapsed time and load change detection
+
+**All features:**
 - Calculator with live load summary and gasoline/propane status side-by-side
 - Elevation-aware generator derating (3.5% per 1,000 ft)
 - GPS elevation lookup via browser geolocation + Open Elevation API
@@ -99,6 +105,39 @@ const FUEL = {
   prop: { tankLb: 20,   halfLoadHrs: 11, halfLoadW: 1300 },
 };
 ```
+
+---
+
+## Fuel Tracker Tab — Auto Fuel Selection
+
+The WEN DF360iX uses **Auto Fuel Selection**: propane (LPG) is always prioritized. If a propane tank with enough LPG is connected, the generator runs on propane. It only switches to gasoline when the **LPG regulator hose is manually disconnected** — there is no automatic fuel switchover.
+
+### Fuel Configuration
+- **Propane Connected** (default Yes) — sets active fuel source to Propane
+- **Gasoline Available** (default Yes) — fallback when propane is not connected
+
+### Runtime Calculations
+Runtime estimates use the current live load from the Calculator tab and the published WEN half-load specs as a proportional baseline.
+
+### Combined Potential Runtime
+Shows propane runtime + gasoline runtime. Assumes:
+1. Propane tank depletes first
+2. User **manually disconnects the LPG regulator hose**
+3. Generator then runs on gasoline
+
+The app does not imply automatic fuel switching.
+
+### Overnight Confidence
+| Runtime | Confidence |
+|---|---|
+| ≥ 10 hours | ✅ High |
+| 6–10 hours | ⚠️ Moderate |
+| < 6 hours  | ❌ Low |
+
+Shows expected depletion times for propane, gasoline, and combined.
+
+### Session Tracking
+Tap **Start Tracking** when the generator starts. Tracks elapsed time, starting load, and detects load changes. Persists across page refreshes.
 
 ---
 

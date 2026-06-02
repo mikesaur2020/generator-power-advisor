@@ -107,6 +107,16 @@ const state = {
     gas:  { active: false, startMs: null, startGal: 1.5 },
     prop: { active: false, startMs: null, startLb:  20  },
   },
+  // New Fuel Tracker tab
+  ft: {
+    propaneConnected: true,
+    gasAvailable:     true,
+    tracking:         false,
+    startMs:          null,
+    startLoadW:       null,
+    startGal:         1.5,
+    startLb:          20,
+  },
 };
 
 // ── Persistence ───────────────────────────────────────────────────────────────
@@ -123,6 +133,7 @@ function loadState() {
     if (saved.hiddenBuiltIns) state.hiddenBuiltIns = saved.hiddenBuiltIns;
     if (saved.activePresetId !== undefined) state.activePresetId = saved.activePresetId;
     if (saved.fuelTracker) Object.assign(state.fuelTracker, saved.fuelTracker);
+    if (saved.ft) Object.assign(state.ft, saved.ft);
   } catch (_) {}
 }
 
@@ -138,6 +149,7 @@ function saveState() {
     hiddenBuiltIns: state.hiddenBuiltIns,
     activePresetId: state.activePresetId,
     fuelTracker: state.fuelTracker,
+    ft: state.ft,
   }));
 }
 
@@ -1353,22 +1365,249 @@ function submitSavePreset() {
 }
 
 // ── Tab routing ───────────────────────────────────────────────────────────────
-const TABS = ['calc','tests','fuel','ambient','about'];
+// ── Fuel Tracker Tab ──────────────────────────────────────────────────────────
+let ftTickInterval  = null;
+let ftLastLoadW     = null;
+
+function activeFuelSource() {
+  const ft = state.ft;
+  if (ft.propaneConnected)             return 'propane';
+  if (!ft.propaneConnected && ft.gasAvailable) return 'gas';
+  return 'none';
+}
+
+function ftRuntimes(loadW) {
+  const { gasGalHr, gasHrsPerTank, propLbHr, propHrsPer20lb } = estFuelBurn(loadW);
+  return {
+    gasGalHr,  gasHrs: isFinite(gasHrsPerTank) ? gasHrsPerTank : 0,
+    propLbHr,  propHrs: isFinite(propHrsPer20lb) ? propHrsPer20lb : 0,
+  };
+}
+
+function ftConfidence(hrs) {
+  if (hrs >= 10) return { icon: '✅', label: 'High Confidence',     css: 'ft-conf-high',   desc: 'Estimated runtime exceeds 10 hours.' };
+  if (hrs >= 6)  return { icon: '⚠️', label: 'Moderate Confidence', css: 'ft-conf-mid',    desc: 'Estimated runtime between 6 and 10 hours.' };
+  return           { icon: '❌', label: 'Low Confidence',           css: 'ft-conf-low',    desc: 'Estimated runtime less than 6 hours.' };
+}
+
+function ftEmptyTime(fromMs, hrsRemaining) {
+  if (!hrsRemaining || hrsRemaining <= 0) return '—';
+  return fmtTime(fromMs + hrsRemaining * 3600000);
+}
+
+function setFtPropane(val) {
+  state.ft.propaneConnected = val;
+  saveState();
+  renderFuelTrackerTab();
+}
+
+function setFtGas(val) {
+  state.ft.gasAvailable = val;
+  saveState();
+  renderFuelTrackerTab();
+}
+
+function ftStartTracking() {
+  const { running } = calcLoads();
+  state.ft.tracking   = true;
+  state.ft.startMs    = Date.now();
+  state.ft.startLoadW = running;
+  ftLastLoadW         = running;
+  saveState();
+  renderFuelTrackerTab();
+}
+
+function ftStopTracking() {
+  state.ft.tracking = false;
+  saveState();
+  renderFuelTrackerTab();
+}
+
+function ftResetTracking() {
+  state.ft.tracking   = false;
+  state.ft.startMs    = null;
+  state.ft.startLoadW = null;
+  ftLastLoadW         = null;
+  saveState();
+  renderFuelTrackerTab();
+}
+
+function startFtTickTimer() {
+  if (ftTickInterval) clearInterval(ftTickInterval);
+  ftTickInterval = setInterval(() => {
+    if (document.getElementById('ft-panel')) renderFuelTrackerTab();
+  }, 30000);
+}
+
+function stopFtTickTimer() {
+  if (ftTickInterval) { clearInterval(ftTickInterval); ftTickInterval = null; }
+}
+
+function buildFuelTrackerHTML() {
+  return `<div id="ft-panel"></div>`;
+}
+
+function renderFuelTrackerTab() {
+  const panel = document.getElementById('ft-panel');
+  if (!panel) return;
+
+  const { running } = calcLoads();
+  const ft = state.ft;
+  const src = activeFuelSource();
+  const { gasGalHr, gasHrs, propLbHr, propHrs } = ftRuntimes(running);
+  const combinedHrs = gasHrs + propHrs;
+
+  // Active runtime = runtime of active fuel source; combined for overnight
+  const activeHrs = src === 'propane' ? propHrs : src === 'gas' ? gasHrs : 0;
+  const conf = ftConfidence(activeHrs);
+  const nowMs = Date.now();
+
+  // Load change detection
+  let loadChangedNote = '';
+  if (ft.tracking && ft.startLoadW != null && ft.startLoadW !== running) {
+    loadChangedNote = `<div class="ft-load-changed">Load changed from ${fmtW(ft.startLoadW)} to ${fmtW(running)}. Runtime estimate updated.</div>`;
+    state.ft.startLoadW = running;
+    ftLastLoadW = running;
+    saveState();
+  }
+
+  // Elapsed
+  const elapsedMs  = ft.tracking && ft.startMs ? nowMs - ft.startMs : 0;
+
+  // Source label
+  const srcLabel = src === 'propane'
+    ? '<span class="ft-src-propane">🔥 Propane</span>'
+    : src === 'gas'
+    ? '<span class="ft-src-gas">⛽ Gasoline</span>'
+    : '<span class="ft-src-none">⚠️ No Fuel Source</span>';
+
+  panel.innerHTML = `
+    <!-- Fuel Configuration -->
+    <div class="card">
+      <h2>Fuel Configuration</h2>
+      <p class="ft-sub">The WEN DF360iX auto-selects fuel: propane is prioritized when connected.</p>
+      <div class="ft-config-grid">
+        <div class="ft-config-item">
+          <span class="ft-config-label">Propane Connected</span>
+          <div class="ft-toggle-pair">
+            <button class="ft-opt-btn ${ft.propaneConnected ? 'active' : ''}" onclick="setFtPropane(true)">Yes</button>
+            <button class="ft-opt-btn ${!ft.propaneConnected ? 'active' : ''}" onclick="setFtPropane(false)">No</button>
+          </div>
+        </div>
+        <div class="ft-config-item">
+          <span class="ft-config-label">Gasoline Available</span>
+          <div class="ft-toggle-pair">
+            <button class="ft-opt-btn ${ft.gasAvailable ? 'active' : ''}" onclick="setFtGas(true)">Yes</button>
+            <button class="ft-opt-btn ${!ft.gasAvailable ? 'active' : ''}" onclick="setFtGas(false)">No</button>
+          </div>
+        </div>
+      </div>
+      <div class="ft-active-source">
+        <span class="ft-active-label">Active Fuel Source</span>
+        <span class="ft-active-value">${srcLabel}</span>
+      </div>
+      ${src === 'none' ? '<div class="ft-no-fuel">⚠️ No fuel source selected. Connect propane or confirm gasoline is available.</div>' : ''}
+    </div>
+
+    <!-- Current Load -->
+    <div class="card ft-load-card">
+      <h2>Current Generator Load</h2>
+      <div class="ft-big-stat">${fmtW(running)}</div>
+      <p class="ft-sub" style="margin-top:4px;">From Calculator tab — updates live as you change appliances.</p>
+      ${loadChangedNote}
+    </div>
+
+    <!-- Runtime cards -->
+    <div class="ft-runtime-grid">
+      <div class="card ft-runtime-card ${src === 'propane' ? 'ft-active-card' : ''}">
+        <h2 class="ft-fuel-heading prop-title">🔥 Propane</h2>
+        ${ft.propaneConnected ? `
+          <div class="ft-runtime-val ${propHrs >= 10 ? 'ft-green' : propHrs >= 6 ? 'ft-yellow' : 'ft-red'}">${fmt(propHrs)} hrs</div>
+          <div class="ft-runtime-sub">${fmt(propLbHr, 2)} lb/hr · 20 lb tank</div>
+          <div class="ft-empty-row"><span>Est. empty</span><span>${ftEmptyTime(nowMs, propHrs)}</span></div>
+        ` : '<p class="tracker-idle">Not connected.</p>'}
+      </div>
+      <div class="card ft-runtime-card ${src === 'gas' ? 'ft-active-card' : ''}">
+        <h2 class="ft-fuel-heading gas-title">⛽ Gasoline</h2>
+        ${ft.gasAvailable ? `
+          <div class="ft-runtime-val ${gasHrs >= 10 ? 'ft-green' : gasHrs >= 6 ? 'ft-yellow' : 'ft-red'}">${fmt(gasHrs)} hrs</div>
+          <div class="ft-runtime-sub">${fmt(gasGalHr, 2)} gal/hr · 1.5 gal tank</div>
+          <div class="ft-empty-row"><span>Est. empty</span><span>${ftEmptyTime(nowMs, gasHrs)}</span></div>
+        ` : '<p class="tracker-idle">Not available.</p>'}
+      </div>
+    </div>
+
+    <!-- Combined Runtime -->
+    ${(ft.propaneConnected && ft.gasAvailable) ? `
+    <div class="card">
+      <h2>Combined Potential Runtime</h2>
+      <div class="ft-combined-val ${combinedHrs >= 10 ? 'ft-green' : combinedHrs >= 6 ? 'ft-yellow' : 'ft-red'}">${fmt(combinedHrs)} hrs</div>
+      <p class="ft-sub" style="margin-top:6px;">
+        Combined runtime assumes the propane tank is depleted first and the LPG regulator hose is
+        <strong>manually disconnected</strong> so the generator can then use gasoline. The WEN DF360iX
+        does not switch fuels automatically.
+      </p>
+    </div>
+    ` : ''}
+
+    <!-- Overnight Confidence -->
+    <div class="card ft-conf-card ${conf.css}">
+      <h2>Overnight Confidence</h2>
+      <div class="ft-conf-badge">${conf.icon} ${conf.label}</div>
+      <p class="ft-conf-desc">${conf.desc}</p>
+      <div class="ft-conf-detail">
+        <div class="ft-empty-row"><span>Current time</span><span>${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span></div>
+        ${ft.propaneConnected ? `<div class="ft-empty-row"><span>Expected propane depletion</span><span>${ftEmptyTime(nowMs, propHrs)}</span></div>` : ''}
+        ${ft.gasAvailable    ? `<div class="ft-empty-row"><span>Expected gasoline depletion</span><span>${ftEmptyTime(nowMs, gasHrs)}</span></div>` : ''}
+        ${(ft.propaneConnected && ft.gasAvailable) ? `<div class="ft-empty-row ft-combined-row"><span>Combined depletion (if manual switchover)</span><span>${ftEmptyTime(nowMs, combinedHrs)}</span></div>` : ''}
+      </div>
+    </div>
+
+    <!-- Tracking -->
+    <div class="card">
+      <h2>Session Tracking</h2>
+      <p class="ft-sub" style="margin-bottom:12px;">Track how long this generator session has been running.</p>
+      ${ft.tracking && ft.startMs ? `
+        <div class="ft-tracking-active">
+          <div class="ft-empty-row"><span>Started</span><span>${fmtTime(ft.startMs)}</span></div>
+          <div class="ft-empty-row"><span>Elapsed</span><span>${fmtElapsed(elapsedMs)}</span></div>
+          <div class="ft-empty-row"><span>Started on load</span><span>${ft.startLoadW != null ? fmtW(ft.startLoadW) : '—'}</span></div>
+          <div class="ft-tracking-btns">
+            <button class="tracker-stop-btn" onclick="ftStopTracking()" style="width:auto;margin-top:0;">⏹ Stop</button>
+            <button class="ft-reset-btn" onclick="ftResetTracking()">↺ Reset</button>
+          </div>
+        </div>
+      ` : `
+        <button class="tracker-start-btn tracker-both-btn tracker-card-start-btn" style="max-width:300px;" onclick="ftStartTracking()">
+          ▶ Start Tracking
+          <span class="tracker-btn-sub">Records start time and load</span>
+        </button>
+        ${ft.startMs ? `<button class="ft-reset-btn" style="margin-top:8px;" onclick="ftResetTracking()">↺ Clear Previous Session</button>` : ''}
+      `}
+    </div>
+  `;
+}
+
+const TABS = ['calc','tests','fuel','ambient','ftracker','about'];
 
 function showTab(id) {
   TABS.forEach(t => {
     document.getElementById('tab-' + t).classList.toggle('active', t === id);
     document.getElementById('panel-' + t).classList.toggle('active', t === id);
   });
-  if (id === 'tests')   renderTests();
-  if (id === 'fuel')    {
+  if (id === 'tests')    renderTests();
+  if (id === 'fuel')     {
     const { running } = calcLoads();
     updateFuelDisplay(running);
     renderFuelTracker();
     startFuelTickTimer();
-  } else {
-    stopFuelTickTimer();
   }
+  if (id === 'ftracker') {
+    renderFuelTrackerTab();
+    startFtTickTimer();
+  }
+  if (id !== 'fuel' && id !== 'ftracker') stopFuelTickTimer();
+  if (id !== 'ftracker') stopFtTickTimer();
 }
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
@@ -1383,6 +1622,11 @@ window.setBattery = setBattery;
 window.setChargeStrategy = setChargeStrategy;
 window.startFuelTracker = startFuelTracker;
 window.stopFuelTracker  = stopFuelTracker;
+window.setFtPropane     = setFtPropane;
+window.setFtGas         = setFtGas;
+window.ftStartTracking  = ftStartTracking;
+window.ftStopTracking   = ftStopTracking;
+window.ftResetTracking  = ftResetTracking;
 window.addTest = addTest;
 window.deleteTest = deleteTest;
 window.updateTest = updateTest;
@@ -1410,10 +1654,11 @@ document.addEventListener('DOMContentLoaded', () => {
     state.activePresetId = 'normal-ac';
   }
 
-  document.getElementById('panel-calc').innerHTML    = buildCalculatorHTML();
-  document.getElementById('panel-fuel').innerHTML    = buildFuelHTML();
-  document.getElementById('panel-ambient').innerHTML = buildAmbientHTML();
-  document.getElementById('panel-about').innerHTML   = buildAboutHTML();
+  document.getElementById('panel-calc').innerHTML      = buildCalculatorHTML();
+  document.getElementById('panel-fuel').innerHTML      = buildFuelHTML();
+  document.getElementById('panel-ambient').innerHTML   = buildAmbientHTML();
+  document.getElementById('panel-ftracker').innerHTML  = buildFuelTrackerHTML();
+  document.getElementById('panel-about').innerHTML     = buildAboutHTML();
 
   // Re-apply button active states after HTML rebuild
   document.querySelectorAll('.battery-btn').forEach((btn, i) => {
