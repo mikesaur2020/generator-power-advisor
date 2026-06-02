@@ -59,6 +59,7 @@ const DERATE_PER_1000FT = 0.035;
 function deratedGen(elevFt) {
   const factor = Math.max(0, 1 - (elevFt / 1000) * DERATE_PER_1000FT);
   return {
+    factor,
     gas:  { running: Math.round(GEN.gas.running  * factor), peak: Math.round(GEN.gas.peak  * factor) },
     prop: { running: Math.round(GEN.prop.running * factor), peak: Math.round(GEN.prop.peak * factor) },
   };
@@ -97,6 +98,7 @@ const state = {
   battery: 'full',
   chargeStrategy: 'solar', // 'solar' | 'generator'
   elevation: 1400,
+  elevSource: 'preset', // 'preset' | 'gps' | 'custom'
   tests: [],
   userPresets: [],
   hiddenBuiltIns: [],
@@ -111,6 +113,7 @@ function loadState() {
     if (saved.battery)        state.battery = saved.battery;
     if (saved.chargeStrategy) state.chargeStrategy = saved.chargeStrategy;
     if (saved.elevation != null) state.elevation = saved.elevation;
+    if (saved.elevSource)    state.elevSource = saved.elevSource;
     if (saved.tests)       state.tests = saved.tests;
     if (saved.userPresets)    state.userPresets = saved.userPresets;
     if (saved.hiddenBuiltIns) state.hiddenBuiltIns = saved.hiddenBuiltIns;
@@ -124,6 +127,7 @@ function saveState() {
     battery: state.battery,
     chargeStrategy: state.chargeStrategy,
     elevation: state.elevation,
+    elevSource: state.elevSource,
     tests: state.tests,
     userPresets: state.userPresets,
     hiddenBuiltIns: state.hiddenBuiltIns,
@@ -203,7 +207,7 @@ function renderCalculator() {
   document.getElementById('res-batt').textContent    = fmtW(battLoad);
 
   // Elevation indicator + collapsed summary
-  const deratePct = Math.round((1 - derated.gas.running / GEN.gas.running) * 100);
+  const deratePct = Math.round((1 - derated.factor) * 100);
   const elevDetail = state.elevation > 0
     ? `${state.elevation.toLocaleString()} ft — ~${deratePct}% derating applied`
     : 'Sea level (no derating)';
@@ -216,6 +220,19 @@ function renderCalculator() {
       ? (state.elevation > 0 ? `${label} — ${state.elevation.toLocaleString()} ft (−${deratePct}%)` : label)
       : `${state.elevation.toLocaleString()} ft (−${deratePct}%)`;
   }
+
+  // Derating info panel
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  setText('derate-elev',     state.elevation.toLocaleString() + ' ft');
+  setText('derate-pct',      deratePct.toFixed(1) + '%');
+  setText('derate-gas-run',  derated.gas.running.toLocaleString() + ' W');
+  setText('derate-gas-peak', derated.gas.peak.toLocaleString() + ' W');
+  setText('derate-prop-run', derated.prop.running.toLocaleString() + ' W');
+  setText('derate-prop-peak',derated.prop.peak.toLocaleString() + ' W');
+
+  // Show/hide refresh GPS button
+  const refreshBtn = document.getElementById('gps-refresh-btn');
+  if (refreshBtn) refreshBtn.style.display = state.elevSource === 'gps' ? 'inline-flex' : 'none';
 
   // Battery section collapsed summary
   const battStateLabels = { full: 'Full', partial: 'Partial', heavy: 'Heavy' };
@@ -355,23 +372,48 @@ function buildCalculatorHTML() {
         <span class="collapse-icon">▸</span>
       </h2>
       <div id="elev-body" style="display:none">
-        <div class="elev-row">
-          <div class="elev-input-wrap">
-            <input type="number" id="elev-input" min="0" max="14000" step="100"
-              value="${state.elevation}"
-              oninput="setElevation(this.value)"
-              placeholder="0">
-            <span class="elev-unit">ft</span>
-          </div>
-          <div class="elev-presets">
-            <button class="preset-btn" onclick="setElevationPreset(0)">Sea level</button>
-            <button class="preset-btn" onclick="setElevationPreset(1400)">Sioux Falls</button>
-            <button class="preset-btn" onclick="setElevationPreset(5280)">Denver</button>
-            <button class="preset-btn" onclick="setElevationPreset(7000)">7,000 ft</button>
-            <button class="preset-btn" onclick="setElevationPreset(9000)">9,000 ft</button>
-            <button class="preset-btn" onclick="setElevationPreset(11000)">11,000 ft</button>
-          </div>
+
+        <!-- Preset buttons -->
+        <p class="batt-label">Presets</p>
+        <div class="elev-presets">
+          <button class="preset-btn" onclick="setElevationPreset(0)">Sea level</button>
+          <button class="preset-btn" onclick="setElevationPreset(1400)">Sioux Falls</button>
+          <button class="preset-btn" onclick="setElevationPreset(5280)">Denver</button>
+          <button class="preset-btn" onclick="setElevationPreset(7000)">7,000 ft</button>
+          <button class="preset-btn" onclick="setElevationPreset(8000)">8,000 ft</button>
+          <button class="preset-btn" onclick="setElevationPreset(9000)">9,000 ft</button>
+          <button class="preset-btn" onclick="setElevationPreset(11000)">11,000 ft</button>
         </div>
+
+        <!-- GPS buttons -->
+        <div class="elev-gps-row">
+          <button class="elev-gps-btn" onclick="getGpsElevation()">📍 Use My Location</button>
+          <button class="elev-gps-btn elev-refresh-btn" id="gps-refresh-btn" onclick="getGpsElevation()" style="display:none">🔄 Refresh Location</button>
+        </div>
+        <div class="elev-gps-status" id="gps-status"></div>
+
+        <!-- Custom elevation -->
+        <p class="batt-label" style="margin-top:14px;">Custom Elevation</p>
+        <div class="elev-custom-row">
+          <input type="number" id="elev-input" min="0" max="29000" step="100"
+            value="${state.elevation}"
+            oninput="setCustomElevation(this.value)"
+            placeholder="Enter feet…">
+          <span class="elev-unit">ft</span>
+        </div>
+
+        <!-- Derating info panel -->
+        <div class="derate-panel">
+          <div class="derate-row"><span>Current Elevation</span><span id="derate-elev">—</span></div>
+          <div class="derate-row"><span>Generator Derating</span><span id="derate-pct" class="derate-pct">—</span></div>
+          <div class="derate-divider"></div>
+          <div class="derate-row"><span>⛽ Gas Running Capacity</span><span id="derate-gas-run">—</span></div>
+          <div class="derate-row"><span>⛽ Gas Peak Capacity</span><span id="derate-gas-peak">—</span></div>
+          <div class="derate-row"><span>🔵 Propane Running Capacity</span><span id="derate-prop-run">—</span></div>
+          <div class="derate-row"><span>🔵 Propane Peak Capacity</span><span id="derate-prop-peak">—</span></div>
+          <p class="derate-note">Derated values are used throughout the app for status and headroom calculations.</p>
+        </div>
+
         <div class="elev-note" id="res-elev"></div>
       </div>
     </div>
@@ -514,7 +556,7 @@ function buildCalculatorHTML() {
   `;
 }
 
-const ELEV_PRESETS = [0, 1400, 5280, 7000, 9000, 11000];
+const ELEV_PRESETS = [0, 1400, 5280, 7000, 8000, 9000, 11000];
 
 function syncPresetButtons(ft) {
   document.querySelectorAll('.preset-btn').forEach((btn, i) => {
@@ -522,21 +564,97 @@ function syncPresetButtons(ft) {
   });
 }
 
-function setElevation(val) {
-  const ft = Math.max(0, Math.min(14000, parseInt(val) || 0));
+function setElevation(ft) {
+  state.elevation = Math.max(0, Math.min(29000, ft));
+  syncPresetButtons(state.elevation);
+  saveState();
+  renderCalculator();
+}
+
+function setCustomElevation(val) {
+  const ft = Math.max(0, Math.min(29000, parseInt(val) || 0));
   state.elevation = ft;
+  state.elevSource = 'custom';
   syncPresetButtons(ft);
+  clearGpsStatus();
   saveState();
   renderCalculator();
 }
 
 function setElevationPreset(ft) {
   state.elevation = ft;
+  state.elevSource = 'preset';
   const input = document.getElementById('elev-input');
   if (input) input.value = ft;
   syncPresetButtons(ft);
+  clearGpsStatus();
   saveState();
   renderCalculator();
+}
+
+function clearGpsStatus() {
+  const el = document.getElementById('gps-status');
+  if (el) el.textContent = '';
+}
+
+function setGpsStatus(msg, isError) {
+  const el = document.getElementById('gps-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'elev-gps-status' + (isError ? ' gps-error' : ' gps-ok');
+}
+
+async function lookupElevation(lat, lon) {
+  // Open Elevation API — free, no key required
+  const url = `https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lon}`;
+  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!res.ok) throw new Error('Elevation API error');
+  const data = await res.json();
+  const meters = data.results[0].elevation;
+  return Math.round(meters * 3.28084); // metres → feet
+}
+
+async function getGpsElevation() {
+  if (!navigator.geolocation) {
+    setGpsStatus('⚠️ This browser does not support GPS location.', true);
+    return;
+  }
+  if (!navigator.onLine) {
+    setGpsStatus('⚠️ GPS elevation lookup requires internet access.', true);
+    return;
+  }
+
+  setGpsStatus('📍 Requesting location…', false);
+  const gpsBtn = document.getElementById('gps-refresh-btn');
+
+  navigator.geolocation.getCurrentPosition(
+    async pos => {
+      const { latitude, longitude } = pos.coords;
+      setGpsStatus('🌐 Looking up elevation…', false);
+      try {
+        const ft = await lookupElevation(latitude, longitude);
+        state.elevation = ft;
+        state.elevSource = 'gps';
+        const input = document.getElementById('elev-input');
+        if (input) input.value = ft;
+        syncPresetButtons(ft);
+        saveState();
+        renderCalculator();
+        setGpsStatus(`📍 Elevation estimated from GPS: ${ft.toLocaleString()} ft`, false);
+      } catch (_) {
+        setGpsStatus('⚠️ Could not retrieve elevation. Check internet connection.', true);
+      }
+    },
+    err => {
+      const msgs = {
+        1: '⚠️ Location permission denied. Enable in browser settings.',
+        2: '⚠️ Location unavailable. Try again or enter manually.',
+        3: '⚠️ Location request timed out. Try again.',
+      };
+      setGpsStatus(msgs[err.code] || '⚠️ GPS error. Try again.', true);
+    },
+    { timeout: 10000, maximumAge: 60000 }
+  );
 }
 
 function collapseAll() {
@@ -899,7 +1017,7 @@ function buildAboutHTML() {
 }
 
 // ── Presets ───────────────────────────────────────────────────────────────────
-const ELEV_LABELS = { 0: 'Sea level', 1400: 'Sioux Falls', 5280: 'Denver', 7000: '7,000 ft', 9000: '9,000 ft', 11000: '11,000 ft' };
+const ELEV_LABELS = { 0: 'Sea level', 1400: 'Sioux Falls', 5280: 'Denver', 7000: '7,000 ft', 8000: '8,000 ft', 9000: '9,000 ft', 11000: '11,000 ft' };
 
 function getAllPresets() {
   const visible = BUILT_IN_PRESETS.filter(p => !state.hiddenBuiltIns.includes(p.id));
@@ -1051,7 +1169,9 @@ window.toggleAppliance = toggleAppliance;
 window.toggleSection = toggleSection;
 window.collapseAll = collapseAll;
 window.setElevation = setElevation;
+window.setCustomElevation = setCustomElevation;
 window.setElevationPreset = setElevationPreset;
+window.getGpsElevation = getGpsElevation;
 window.setBattery = setBattery;
 window.setChargeStrategy = setChargeStrategy;
 window.addTest = addTest;
@@ -1077,6 +1197,7 @@ document.addEventListener('DOMContentLoaded', () => {
     state.battery = 'full';
     state.chargeStrategy = 'solar';
     state.elevation = defaultPreset.elevation;
+    state.elevSource = 'preset';
     state.activePresetId = 'normal-ac';
   }
 

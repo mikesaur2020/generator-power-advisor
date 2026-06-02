@@ -8,6 +8,10 @@ Replaces an Excel workbook with an installable, offline-capable iPhone-friendly 
 
 **Key features:**
 - Calculator with live load summary and gasoline/propane status side-by-side
+- Elevation-aware generator derating (3.5% per 1,000 ft)
+- GPS elevation lookup via browser geolocation + Open Elevation API
+- Elevation presets: Sea Level, Sioux Falls, Denver, 7k/8k/9k/11k ft
+- Custom elevation entry
 - Real-World Tests tracker (stored in localStorage)
 - Fuel burn runtime estimates for both fuels
 - A/C duty cycle guidance by outdoor temperature and setpoint
@@ -95,6 +99,36 @@ const FUEL = {
   prop: { tankLb: 20,   halfLoadHrs: 11, halfLoadW: 1300 },
 };
 ```
+
+---
+
+## Elevation & Generator Derating
+
+Generator output decreases approximately **3.5% per 1,000 ft** above sea level.
+
+| Elevation | Derating | Gas Running | Gas Peak | Propane Running | Propane Peak |
+|---|---|---|---|---|---|
+| Sea level | 0% | 2,900W | 3,600W | 2,600W | 3,500W |
+| Sioux Falls (1,400 ft) | ~5% | 2,758W | 3,424W | 2,473W | 3,329W |
+| Denver (5,280 ft) | ~18% | 2,364W | 2,935W | 2,120W | 2,853W |
+| 7,000 ft | ~25% | 2,190W | 2,718W | 1,963W | 2,643W |
+| 8,000 ft | ~28% | 2,088W | 2,592W | 1,872W | 2,520W |
+| 9,000 ft | ~32% | 1,986W | 2,466W | 1,781W | 2,398W |
+| 11,000 ft | ~39% | 1,784W | 2,214W | 1,599W | 2,153W |
+
+Derated values are used for all Good/Near Limit/Over Limit status calculations.
+
+### Elevation Sources
+
+**Presets** — tap a preset button (Sea level, Sioux Falls, Denver, 7k–11k ft) to apply instantly.
+
+**GPS (📍 Use My Location)** — taps the browser Geolocation API for your current position, then queries the [Open Elevation API](https://api.open-elevation.com) to convert lat/lon to feet. Requires internet. Only your elevation (in feet) is stored locally — latitude and longitude are never saved.
+
+**🔄 Refresh Location** — appears after a GPS lookup; tap to update elevation at a new campsite.
+
+**Custom entry** — type any value in the Custom Elevation field to override presets and GPS.
+
+**Offline behavior** — GPS lookup requires internet. Presets and manual entry work fully offline.
 
 ---
 
