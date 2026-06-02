@@ -68,7 +68,7 @@ function deratedGen(elevFt) {
 const state = {
   appliances: Object.fromEntries(APPLIANCES.map(a => [a.id, a.on])),
   battery: 'full',
-  elevation: 0,
+  elevation: 1400,
   tests: [],
 };
 
@@ -366,9 +366,18 @@ function buildCalculatorHTML() {
   `;
 }
 
+const ELEV_PRESETS = [0, 1400, 5280, 7000, 9000, 11000];
+
+function syncPresetButtons(ft) {
+  document.querySelectorAll('.preset-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', ELEV_PRESETS[i] === ft);
+  });
+}
+
 function setElevation(val) {
   const ft = Math.max(0, Math.min(14000, parseInt(val) || 0));
   state.elevation = ft;
+  syncPresetButtons(ft);
   saveState();
   renderCalculator();
 }
@@ -377,6 +386,7 @@ function setElevationPreset(ft) {
   state.elevation = ft;
   const input = document.getElementById('elev-input');
   if (input) input.value = ft;
+  syncPresetButtons(ft);
   saveState();
   renderCalculator();
 }
@@ -748,10 +758,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('panel-ambient').innerHTML = buildAmbientHTML();
   document.getElementById('panel-about').innerHTML   = buildAboutHTML();
 
-  // Re-apply battery button active state after HTML rebuild
+  // Re-apply button active states after HTML rebuild
   document.querySelectorAll('.battery-btn').forEach((btn, i) => {
     btn.classList.toggle('active', ['full','partial','heavy'][i] === state.battery);
   });
+  syncPresetButtons(state.elevation);
 
   renderCalculator();  // also sets warnings via renderCalculator
   showTab('calc');

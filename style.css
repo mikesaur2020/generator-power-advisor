@@ -236,6 +236,7 @@ nav button.active {
   transition: border-color 0.15s, color 0.15s;
 }
 .preset-btn:hover { border-color: var(--accent); color: var(--accent); }
+.preset-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(245,158,11,0.12); }
 .elev-note {
   font-size: 0.72rem;
   color: var(--text-muted);
