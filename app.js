@@ -1566,48 +1566,88 @@ function renderFuelTrackerTab() {
     <!-- Runtime cards -->
     <div class="ft-runtime-grid">
       <div class="card ft-runtime-card ${src === 'propane' ? 'ft-active-card' : ''}">
-        <h2 class="ft-fuel-heading prop-title">🔥 Propane</h2>
+        <h2 class="ft-fuel-heading prop-title">🔥 Propane${src === 'propane' ? ' <span class="ft-active-badge">ACTIVE</span>' : ''}</h2>
         ${ft.propaneConnected ? `
           <div class="ft-runtime-val ${propHrs >= 10 ? 'ft-green' : propHrs >= 6 ? 'ft-yellow' : 'ft-red'}">${fmt(propHrs)} hrs</div>
           <div class="ft-runtime-sub">${fmt(propLbHr, 2)} lb/hr · 20 lb tank</div>
           <div class="ft-empty-row"><span>Est. empty</span><span>${ftEmptyTime(nowMs, propHrs)}</span></div>
         ` : '<p class="tracker-idle">Not connected.</p>'}
       </div>
-      <div class="card ft-runtime-card ${src === 'gas' ? 'ft-active-card' : ''}">
-        <h2 class="ft-fuel-heading gas-title">⛽ Gasoline</h2>
-        ${ft.gasAvailable ? `
-          <div class="ft-runtime-val ${gasHrs >= 10 ? 'ft-green' : gasHrs >= 6 ? 'ft-yellow' : 'ft-red'}">${fmt(gasHrs)} hrs</div>
-          <div class="ft-runtime-sub">${fmt(gasGalHr, 2)} gal/hr · 1.5 gal tank</div>
-          <div class="ft-empty-row"><span>Est. empty</span><span>${ftEmptyTime(nowMs, gasHrs)}</span></div>
-        ` : '<p class="tracker-idle">Not available.</p>'}
+      <div class="card ft-runtime-card ${src === 'gas' ? 'ft-active-card' : 'ft-reserve-card'}">
+        <h2 class="ft-fuel-heading gas-title">⛽ Gasoline${src === 'gas' ? ' <span class="ft-active-badge">ACTIVE</span>' : (ft.propaneConnected && ft.gasAvailable ? ' <span class="ft-reserve-badge">RESERVE</span>' : '')}</h2>
+        ${ft.gasAvailable ? (() => {
+          if (ft.propaneConnected) {
+            // Gasoline is reserve — starts after propane runs out
+            const gasStartMs = nowMs + propHrs * 3600000;
+            const gasCombinedEmptyMs = gasStartMs + gasHrs * 3600000;
+            return `
+              <div class="ft-runtime-val ft-reserve-val">${fmt(gasHrs)} hrs</div>
+              <div class="ft-runtime-sub">${fmt(gasGalHr, 2)} gal/hr · 1.5 gal tank · after propane</div>
+              <div class="ft-empty-row"><span>Available after propane at</span><span>${fmtTime(gasStartMs)}</span></div>
+              <div class="ft-empty-row"><span>Est. gas empty at</span><span>${fmtTime(gasCombinedEmptyMs)}</span></div>
+              <p class="ft-reserve-note">Not being consumed now. Requires manual LPG hose disconnect.</p>`;
+          } else {
+            return `
+              <div class="ft-runtime-val ${gasHrs >= 10 ? 'ft-green' : gasHrs >= 6 ? 'ft-yellow' : 'ft-red'}">${fmt(gasHrs)} hrs</div>
+              <div class="ft-runtime-sub">${fmt(gasGalHr, 2)} gal/hr · 1.5 gal tank</div>
+              <div class="ft-empty-row"><span>Est. empty</span><span>${ftEmptyTime(nowMs, gasHrs)}</span></div>`;
+          }
+        })() : '<p class="tracker-idle">Not available.</p>'}
       </div>
     </div>
 
-    <!-- Combined Runtime -->
+    <!-- Combined Runtime (only when both fuels available) -->
     ${(ft.propaneConnected && ft.gasAvailable) ? `
     <div class="card">
       <h2>Combined Potential Runtime</h2>
       <div class="ft-combined-val ${combinedHrs >= 10 ? 'ft-green' : combinedHrs >= 6 ? 'ft-yellow' : 'ft-red'}">${fmt(combinedHrs)} hrs</div>
-      <p class="ft-sub" style="margin-top:6px;">
-        Combined runtime assumes the propane tank is depleted first and the LPG regulator hose is
-        <strong>manually disconnected</strong> so the generator can then use gasoline. The WEN DF360iX
-        does not switch fuels automatically.
+      <div class="ft-empty-row" style="margin-top:6px;"><span>Est. combined empty time</span><span>${ftEmptyTime(nowMs, combinedHrs)}</span></div>
+      <p class="ft-sub" style="margin-top:8px;">
+        Combined runtime assumes propane is depleted first, then the LPG regulator hose is
+        <strong>manually disconnected</strong> before gasoline can be used.
+        The WEN DF360iX does not switch fuels automatically.
       </p>
     </div>
     ` : ''}
 
     <!-- Overnight Confidence -->
-    <div class="card ft-conf-card ${conf.css}">
-      <h2>Overnight Confidence</h2>
-      <div class="ft-conf-badge">${conf.icon} ${conf.label}</div>
-      <p class="ft-conf-desc">${conf.desc}</p>
-      <div class="ft-conf-detail">
-        <div class="ft-empty-row"><span>Current time</span><span>${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span></div>
-        ${ft.propaneConnected ? `<div class="ft-empty-row"><span>Expected propane depletion</span><span>${ftEmptyTime(nowMs, propHrs)}</span></div>` : ''}
-        ${ft.gasAvailable    ? `<div class="ft-empty-row"><span>Expected gasoline depletion</span><span>${ftEmptyTime(nowMs, gasHrs)}</span></div>` : ''}
-        ${(ft.propaneConnected && ft.gasAvailable) ? `<div class="ft-empty-row ft-combined-row"><span>Combined depletion (if manual switchover)</span><span>${ftEmptyTime(nowMs, combinedHrs)}</span></div>` : ''}
-      </div>
-    </div>
+    ${(() => {
+      const propConf     = ft.propaneConnected ? ftConfidence(propHrs)     : null;
+      const combinedConf = (ft.propaneConnected && ft.gasAvailable) ? ftConfidence(combinedHrs) : null;
+      const soloConf     = (!ft.propaneConnected && ft.gasAvailable) ? ftConfidence(gasHrs) : null;
+      const mainConf     = propConf || soloConf || { icon:'❌', label:'No Fuel', css:'ft-conf-low', desc:'No fuel source available.' };
+      const nowStr = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      return `
+      <div class="card ft-conf-card ${mainConf.css}">
+        <h2>Overnight Confidence</h2>
+        <div class="ft-conf-grid">
+          ${(ft.propaneConnected) ? `
+          <div class="ft-conf-col">
+            <div class="ft-conf-col-label">Propane Only</div>
+            <div class="ft-conf-badge">${propConf.icon} ${propConf.label}</div>
+            <p class="ft-conf-desc">${propConf.desc}</p>
+            <div class="ft-empty-row"><span>Propane empty at</span><span>${ftEmptyTime(nowMs, propHrs)}</span></div>
+          </div>` : ''}
+          ${(ft.propaneConnected && ft.gasAvailable) ? `
+          <div class="ft-conf-col">
+            <div class="ft-conf-col-label">Combined (manual switch)</div>
+            <div class="ft-conf-badge">${combinedConf.icon} ${combinedConf.label}</div>
+            <p class="ft-conf-desc">${combinedConf.desc}</p>
+            <div class="ft-empty-row"><span>Combined empty at</span><span>${ftEmptyTime(nowMs, combinedHrs)}</span></div>
+          </div>` : ''}
+          ${(!ft.propaneConnected && ft.gasAvailable) ? `
+          <div class="ft-conf-col">
+            <div class="ft-conf-col-label">Gasoline</div>
+            <div class="ft-conf-badge">${soloConf.icon} ${soloConf.label}</div>
+            <p class="ft-conf-desc">${soloConf.desc}</p>
+            <div class="ft-empty-row"><span>Gasoline empty at</span><span>${ftEmptyTime(nowMs, gasHrs)}</span></div>
+          </div>` : ''}
+        </div>
+        <div class="ft-conf-detail">
+          <div class="ft-empty-row"><span>Current time</span><span>${nowStr}</span></div>
+        </div>
+      </div>`;
+    })()}
 
     <!-- Tracking -->
     <div class="card">

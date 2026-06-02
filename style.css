@@ -964,6 +964,33 @@ nav button.active {
 }
 .ft-reset-btn:hover { color: var(--accent); border-color: var(--accent); }
 
+.ft-active-badge {
+  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em;
+  background: rgba(16,185,129,0.2); color: var(--good);
+  border-radius: 4px; padding: 1px 5px; margin-left: 4px; vertical-align: middle;
+}
+.ft-reserve-badge {
+  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.06em;
+  background: rgba(148,163,184,0.15); color: var(--text-muted);
+  border-radius: 4px; padding: 1px 5px; margin-left: 4px; vertical-align: middle;
+}
+.ft-reserve-card { opacity: 0.85; }
+.ft-reserve-val { color: var(--text-muted) !important; font-size: 1.4rem !important; }
+.ft-reserve-note { font-size: 0.68rem; color: var(--text-muted); font-style: italic; margin-top: 6px; line-height: 1.4; }
+
+.ft-conf-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+@media (max-width: 420px) { .ft-conf-grid { grid-template-columns: 1fr; } }
+.ft-conf-col { display: flex; flex-direction: column; gap: 2px; }
+.ft-conf-col-label {
+  font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 4px;
+}
+
 .ft-combo-card { padding: 0; overflow: hidden; }
 .ft-combo-header {
   display: flex;

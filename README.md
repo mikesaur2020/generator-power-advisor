@@ -20,16 +20,19 @@ The **Live Fuel Tracker** tab is the default. It models the WEN DF360iX Auto Fue
 6. About
 
 **Key features:**
+- **Live Fuel Tracker** — propane runtime, gasoline reserve runtime, combined runtime, Overnight Confidence
+- **Auto Fuel Selection modeling** — WEN DF360iX propane-first behavior; gasoline shown as reserve (not simultaneously consumed)
 - Calculator with live load summary and gasoline/propane status side-by-side
 - Elevation-aware generator derating (3.5% per 1,000 ft)
 - GPS elevation lookup via browser geolocation + Open Elevation API
-- Elevation presets: Sea Level, Sioux Falls, Denver, 7k/8k/9k/11k ft
-- Custom elevation entry
 - Real-World Tests tracker (stored in localStorage)
-- Fuel burn runtime estimates for both fuels
+- Fuel Burn Reference — static burn rate tables by load level
 - A/C duty cycle guidance by outdoor temperature and setpoint
 - Fully offline after first load (service worker caching)
 - Installable from iPhone Safari via Add to Home Screen
+
+See [PROJECT_VISION.md](PROJECT_VISION.md) for equipment specs and design decisions.
+See [AI_HANDOFF.md](AI_HANDOFF.md) for feature inventory, known issues, and future enhancements.
 
 ---
 
