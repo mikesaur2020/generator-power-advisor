@@ -109,11 +109,31 @@ header p {
   transition: border-color 0.15s, background 0.15s, color 0.15s;
   white-space: nowrap;
 }
-.quick-preset-btn:hover {
+.quick-preset-btn:hover,
+.quick-preset-btn.active {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(245,158,11,0.1);
+  background: rgba(245,158,11,0.12);
 }
+.preset-combo-row {
+  margin-top: 10px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  padding: 8px 10px;
+  background: var(--surface2);
+  border-radius: 6px;
+}
+.modal-restore-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.72rem;
+  padding: 5px 12px;
+}
+.modal-restore-btn:hover { color: var(--accent); border-color: var(--accent); }
 
 /* ── Modal ── */
 .modal-overlay {

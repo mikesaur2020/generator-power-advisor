@@ -98,6 +98,8 @@ const state = {
   elevation: 1400,
   tests: [],
   userPresets: [],
+  hiddenBuiltIns: [],   // IDs of built-in presets the user has hidden
+  activePresetId: null, // last applied preset, for combination row
 };
 
 // ── Persistence ───────────────────────────────────────────────────────────────
@@ -108,7 +110,9 @@ function loadState() {
     if (saved.battery)     state.battery = saved.battery;
     if (saved.elevation != null) state.elevation = saved.elevation;
     if (saved.tests)       state.tests = saved.tests;
-    if (saved.userPresets) state.userPresets = saved.userPresets;
+    if (saved.userPresets)    state.userPresets = saved.userPresets;
+    if (saved.hiddenBuiltIns) state.hiddenBuiltIns = saved.hiddenBuiltIns;
+    if (saved.activePresetId !== undefined) state.activePresetId = saved.activePresetId;
   } catch (_) {}
 }
 
@@ -119,6 +123,8 @@ function saveState() {
     elevation: state.elevation,
     tests: state.tests,
     userPresets: state.userPresets,
+    hiddenBuiltIns: state.hiddenBuiltIns,
+    activePresetId: state.activePresetId,
   }));
 }
 
@@ -201,9 +207,12 @@ function renderCalculator() {
   const elevEl = document.getElementById('res-elev');
   if (elevEl) elevEl.textContent = elevDetail;
   const elevSummary = document.getElementById('summary-elev');
-  if (elevSummary) elevSummary.textContent = state.elevation > 0
-    ? `${state.elevation.toLocaleString()} ft (−${deratePct}%)`
-    : 'Sea level';
+  if (elevSummary) {
+    const label = ELEV_LABELS[state.elevation];
+    elevSummary.textContent = label
+      ? (state.elevation > 0 ? `${label} — ${state.elevation.toLocaleString()} ft (−${deratePct}%)` : label)
+      : `${state.elevation.toLocaleString()} ft (−${deratePct}%)`;
+  }
 
   // Battery state collapsed summary
   const battLabels = { full: 'Full (+0W)', partial: 'Partial (+300W)', heavy: 'Heavy (+700W)' };
@@ -315,6 +324,7 @@ function buildCalculatorHTML() {
     <div class="card preset-card">
       <h2>Quick Presets</h2>
       <div class="preset-btn-row" id="preset-btn-row"></div>
+      <div class="preset-combo-row" id="preset-combo-row" style="display:none"></div>
     </div>
 
     <!-- Elevation -->
@@ -842,16 +852,36 @@ function buildAboutHTML() {
 }
 
 // ── Presets ───────────────────────────────────────────────────────────────────
+const ELEV_LABELS = { 0: 'Sea level', 1400: 'Sioux Falls', 5280: 'Denver', 7000: '7,000 ft', 9000: '9,000 ft', 11000: '11,000 ft' };
+
 function getAllPresets() {
-  return [...BUILT_IN_PRESETS, ...state.userPresets];
+  const visible = BUILT_IN_PRESETS.filter(p => !state.hiddenBuiltIns.includes(p.id));
+  return [...visible, ...state.userPresets];
+}
+
+function presetComboText(preset) {
+  const on = APPLIANCES.filter(a => preset.appliances[a.id]).map(a => a.name);
+  const battLabels = { full: 'Full battery', partial: 'Partial battery', heavy: 'Heavy battery' };
+  const elevLabel = ELEV_LABELS[preset.elevation] || `${preset.elevation.toLocaleString()} ft`;
+  return [...on, battLabels[preset.battery], elevLabel].join(' · ');
 }
 
 function renderPresetButtons() {
   const row = document.getElementById('preset-btn-row');
   if (!row) return;
   row.innerHTML = getAllPresets().map(p => `
-    <button class="quick-preset-btn" onclick="applyPreset('${p.id}')">${p.name}</button>
+    <button class="quick-preset-btn${state.activePresetId === p.id ? ' active' : ''}" onclick="applyPreset('${p.id}')">${p.name}</button>
   `).join('');
+
+  const combo = document.getElementById('preset-combo-row');
+  if (!combo) return;
+  const active = getAllPresets().find(p => p.id === state.activePresetId);
+  if (active) {
+    combo.textContent = presetComboText(active);
+    combo.style.display = 'block';
+  } else {
+    combo.style.display = 'none';
+  }
 }
 
 function applyPreset(id) {
@@ -875,8 +905,10 @@ function applyPreset(id) {
   if (elevInput) elevInput.value = state.elevation;
   syncPresetButtons(state.elevation);
 
+  state.activePresetId = id;
   saveState();
   renderCalculator();
+  renderPresetButtons();
 }
 
 function saveCurrentAsPreset(name) {
@@ -897,6 +929,22 @@ function saveCurrentAsPreset(name) {
 
 function deleteUserPreset(id) {
   state.userPresets = state.userPresets.filter(p => p.id !== id);
+  if (state.activePresetId === id) state.activePresetId = null;
+  saveState();
+  renderPresetButtons();
+  renderManageModal();
+}
+
+function deleteBuiltInPreset(id) {
+  if (!state.hiddenBuiltIns.includes(id)) state.hiddenBuiltIns.push(id);
+  if (state.activePresetId === id) state.activePresetId = null;
+  saveState();
+  renderPresetButtons();
+  renderManageModal();
+}
+
+function restoreBuiltIns() {
+  state.hiddenBuiltIns = [];
   saveState();
   renderPresetButtons();
   renderManageModal();
@@ -914,13 +962,17 @@ function closeManagePresets() {
 function renderManageModal() {
   const list = document.getElementById('modal-preset-list');
   if (!list) return;
-  const all = getAllPresets();
-  list.innerHTML = all.map(p => `
+  const visible = getAllPresets();
+  const hasHidden = state.hiddenBuiltIns.length > 0;
+  list.innerHTML = visible.map(p => `
     <div class="modal-preset-row">
       <span class="modal-preset-name">${escHtml(p.name)}${p.builtIn ? ' <span class="built-in-tag">built-in</span>' : ''}</span>
-      ${!p.builtIn ? `<button class="modal-delete-btn" onclick="deleteUserPreset('${p.id}')">Delete</button>` : ''}
+      <button class="modal-delete-btn" onclick="${p.builtIn ? `deleteBuiltInPreset('${p.id}')` : `deleteUserPreset('${p.id}')`}">Delete</button>
     </div>
-  `).join('');
+  `).join('') + (hasHidden ? `
+    <div style="margin-top:10px;text-align:center">
+      <button class="modal-restore-btn" onclick="restoreBuiltIns()">Restore hidden built-ins</button>
+    </div>` : '');
 }
 
 function submitSavePreset() {
@@ -956,6 +1008,8 @@ window.applyPreset = applyPreset;
 window.openManagePresets = openManagePresets;
 window.closeManagePresets = closeManagePresets;
 window.deleteUserPreset = deleteUserPreset;
+window.deleteBuiltInPreset = deleteBuiltInPreset;
+window.restoreBuiltIns = restoreBuiltIns;
 window.submitSavePreset = submitSavePreset;
 
 document.addEventListener('DOMContentLoaded', () => {
