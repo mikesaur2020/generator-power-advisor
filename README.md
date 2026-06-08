@@ -31,6 +31,7 @@ See [AI_HANDOFF.md](AI_HANDOFF.md) for feature inventory, known issues, and futu
 | Feature | Description |
 |---|---|
 | ⚡ **Generator Load Calculator** | Live load summary across 16 appliances with Good / Near Limit / Over Limit status for both gasoline and propane |
+| 🔌 **30A Shore Power Check** | Separate tab that checks the selected appliance load against a campground 30A pedestal — Estimated Amps, headroom, and Safe / Near Limit / Likely Trip Breaker status |
 | ⛽ **Live Fuel Tracker** | Active fuel source, propane runtime, gasoline reserve runtime, combined potential runtime, and Overnight Confidence |
 | 📚 **Fuel Burn Reference** | Planning tables showing burn rates and runtime estimates at different load levels |
 | 🌙 **Overnight Confidence** | High / Moderate / Low confidence based on estimated runtime vs. a full night |
@@ -80,10 +81,11 @@ All runtime estimates are proportional estimates based on WEN/Home Depot publish
 |---|---|---|
 | 1 | **Live Fuel Tracker** | Default tab — runtime, fuel source, overnight confidence |
 | 2 | **Calculator** | Appliance load calculator and generator status |
-| 3 | **Real-World Tests** | Track appliance combinations verified in the field |
-| 4 | **Fuel Burn Reference** | Planning tables — burn rates at different load levels |
-| 5 | **Ambient & A/C** | Duty cycle guidance by temperature and setpoint |
-| 6 | **About** | Equipment specs and assumptions |
+| 3 | **30A Shore Power** | "Will the campground pedestal support this load?" — Estimated Amps, headroom, Safe / Near Limit / Likely Trip Breaker |
+| 4 | **Real-World Tests** | Track appliance combinations verified in the field |
+| 5 | **Fuel Burn Reference** | Planning tables — burn rates at different load levels |
+| 6 | **Ambient & A/C** | Duty cycle guidance by temperature and setpoint |
+| 7 | **About** | Equipment specs and assumptions |
 
 ---
 
@@ -122,6 +124,34 @@ Generator output decreases approximately **3.5% per 1,000 ft** above sea level.
 | 11,000 ft | ~39% | 1,784W | 2,214W | 1,599W | 2,153W |
 
 **Elevation sources:** Presets, GPS (📍 Use My Location via Open Elevation API — requires internet), or manual entry. GPS stores only the resulting elevation in feet — no lat/lon is saved.
+
+---
+
+## 30A Shore Power Check
+
+A separate use case from generator operation: **"Will the campground pedestal support this load?"** The **30A Shore Power** tab checks the electrical draw of the currently selected appliances against a standard 30A RV pedestal. It deliberately excludes fuel, propane/gasoline, runtime, weather, and elevation logic — it is strictly about electrical loading.
+
+| Limit | Value |
+|---|---|
+| Theoretical maximum | 120V × 30A = **3,600W** |
+| Recommended continuous (80% of breaker) | 24A = **2,880W** |
+
+**Calculations** (using the existing appliance running-watt values):
+
+- **Estimated Amps** = Total Running Watts ÷ 120 — the primary number
+- **Total Running Watts** — sum of selected appliances
+- **Headroom Remaining** — watts/amps left to the 24A recommended limit
+- **% of 30A Capacity** — load as a percentage of the 3,600W max
+
+**Status levels:**
+
+| Status | Condition |
+|---|---|
+| ✅ Safe | ≤ 24A |
+| ⚠️ Near Limit | > 24A and ≤ 30A |
+| ⛔ Likely Trip Breaker | > 30A |
+
+If A/C Cooling is on **and** a high-load appliance (Microwave, Toaster, Coffee Maker, Hair Dryer, or Clothes Iron) is selected, the tab recommends switching A/C to Fan Only and provides a one-tap button to do so. Appliance selection and presets are shared with the Calculator tab — no duplicate preset system.
 
 ---
 

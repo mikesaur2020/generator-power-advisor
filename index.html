@@ -30,6 +30,7 @@
   <nav>
     <button id="tab-ftracker" class="active" onclick="showTab('ftracker')">Live Fuel Tracker</button>
     <button id="tab-calc"    onclick="showTab('calc')">Calculator</button>
+    <button id="tab-shore"   onclick="showTab('shore')">30A Shore Power</button>
     <button id="tab-tests"   onclick="showTab('tests')">Real-World Tests</button>
     <button id="tab-fuel"    onclick="showTab('fuel')">Reference</button>
     <button id="tab-ambient" onclick="showTab('ambient')">Ambient &amp; A/C</button>
@@ -39,6 +40,7 @@
   <main>
     <div id="panel-ftracker" class="tab-panel active"></div>
     <div id="panel-calc"    class="tab-panel"></div>
+    <div id="panel-shore"   class="tab-panel"></div>
 
     <div id="panel-tests"   class="tab-panel">
       <div class="card">
@@ -116,6 +118,8 @@
         <dd>Propane runtime + gasoline reserve runtime. Only achievable if you manually disconnect the LPG hose after propane runs out, then restart the generator.</dd>
         <dt>What does the Calculator tab do?</dt>
         <dd>Shows the exact generator load based on which appliances are on. Use it to verify the load before checking Fuel Tracker runtime.</dd>
+        <dt>What is the 30A Shore Power tab?</dt>
+        <dd>A separate check for when you plug into a campground 30A pedestal instead of running the generator. It converts your selected appliance load to amps (Watts ÷ 120) and tells you if it's Safe (≤24A), Near Limit (24–30A), or Likely to Trip the Breaker (&gt;30A). A 30A service is 3,600W max, with 2,880W (24A) as the recommended continuous limit. No fuel, runtime, or elevation logic applies.</dd>
       </dl>
     </div>
   </div>

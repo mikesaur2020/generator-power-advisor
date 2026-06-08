@@ -6,11 +6,12 @@ Read [PROJECT_VISION.md](PROJECT_VISION.md) first for equipment specs, design de
 
 ## Current Project Maturity
 
-**Version 1.0.1 — WEN fuel behavior update (June 2026).**
+**Version 1.1.0 — 30A Shore Power tab added (June 2026).**
 
 The application has reached a stable, feature-complete state for its primary use case. Core functionality implemented:
 
 - Generator load calculator with Good / Near Limit / Over Limit status
+- 30A Shore Power tab — Estimated Amps, headroom, Safe / Near Limit / Likely Trip Breaker (electrical-only, no fuel/runtime/elevation)
 - Live Fuel Tracker with WEN Auto Fuel Selection modeling
 - Fuel Burn Reference (planning tables)
 - Overnight Confidence (Propane Only + Combined)
@@ -68,7 +69,7 @@ EOF
 
 | Section | What's there |
 |---|---|
-| Top constants | `APPLIANCES`, `GEN`, `BATTERY_LOAD`, `FUEL`, `DERATE_PER_1000FT` |
+| Top constants | `APPLIANCES`, `GEN`, `BATTERY_LOAD`, `SHORE_30A`, `SHORE_HIGHLOAD`, `FUEL`, `DERATE_PER_1000FT` |
 | `BUILT_IN_PRESETS` | 5 default quick presets |
 | `state` object | All app state (appliances, battery, elevation, fuel tracker, etc.) |
 | `calcLoads()` | Running load + surge + battery charging load |
@@ -76,6 +77,10 @@ EOF
 | `fuelStatus()` | Good / Near Limit / Over Limit logic |
 | `renderCalculator()` | Updates all Calculator tab display elements |
 | `buildCalculatorHTML()` | Generates Calculator tab HTML (called once on boot) |
+| `shoreApplianceWatts()` | Appliance-only running watts for shore power (no battery/generator load) |
+| `shoreStatus(amps)` | Safe / Near Limit / Likely Trip Breaker logic (≤24A / 24–30A / >30A) |
+| `renderShorePowerTab()` | Generates and injects the 30A Shore Power tab HTML (re-rendered on show) |
+| `shoreAcFanOnly()` | One-tap action: switch A/C Cooling → Fan Only, re-render |
 | `renderFuelTrackerTab()` | Generates and injects Live Fuel Tracker tab HTML |
 | `buildFuelHTML()` | Fuel Burn Reference tab |
 | `showTab(id)` | Tab routing — starts/stops tick timers |
@@ -112,6 +117,17 @@ EOF
 - Manage Presets modal (save current state, delete presets)
 - Status banner (Near Limit / Over Limit) in Generator Load Summary
 - All sections collapsible, Collapse All button in header
+
+### 30A Shore Power
+- Separate use case from generator operation: "Will the campground pedestal support this load?"
+- Reads the shared appliance selection via `shoreApplianceWatts()` (appliance running watts only — no battery/generator-assist load, no elevation derating)
+- **Estimated Amps** is the primary number (Watts ÷ 120); Total Running Watts, Headroom Remaining (to 24A), and % of 30A Capacity follow
+- Limits shown: theoretical 3,600W / 30A and recommended continuous 2,880W / 24A (80%)
+- Prominent hero status card + capacity bar: ✅ Safe (≤24A) / ⚠️ Near Limit (24–30A) / ⛔ Likely Trip Breaker (>30A)
+- A/C Cooling + high-load appliance (`SHORE_HIGHLOAD`) → recommendation card with one-tap "Switch A/C to Fan Only" (`shoreAcFanOnly()`)
+- Reuses `getAllPresets()` / `applyPreset()` — no duplicate preset system; `applyPreset()` also refreshes this tab
+- Re-rendered fresh each time the tab is shown (placeholder `#shore-panel`), so it always reflects the current Calculator selection
+- Deliberately excludes fuel, propane/gasoline, runtime, weather, and elevation logic
 
 ### Fuel Burn Reference
 - Static burn rate tables at 25/50/75/100% load

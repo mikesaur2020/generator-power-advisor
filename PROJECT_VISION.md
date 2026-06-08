@@ -92,6 +92,15 @@ Generator output decreases approximately 3.5% per 1,000 ft above sea level. All 
 ### Peak Load Logic
 Estimated peak load = selected running load + **largest single** startup surge. Appliances do not all surge simultaneously.
 
+### 30A Shore Power (Secondary Use Case)
+The app is generator-first, but campers also plug into a 30A pedestal at developed campgrounds. The **30A Shore Power** tab answers a distinct question — *"Will the campground pedestal support this load?"* — using only the appliance running watts. It deliberately omits fuel, runtime, weather, and elevation logic; a pedestal does not care about any of those.
+
+- 30A RV service = 120V × 30A = **3,600W** theoretical max.
+- Breakers are rated for **80% continuous** = 24A / **2,880W** safe sustained limit.
+- **Amps = Watts ÷ 120.** Estimated Amps is the primary number.
+- Status: **Safe** ≤ 24A · **Near Limit** 24–30A · **Likely Trip Breaker** > 30A.
+- Reuses the shared appliance selection and presets — no duplicate preset system. Recommends switching A/C to Fan Only when A/C Cooling and a high-load appliance are both selected.
+
 ---
 
 ## Tab Structure (Current)
@@ -100,6 +109,7 @@ Estimated peak load = selected running load + **largest single** startup surge. 
 |---|---|
 | **Live Fuel Tracker** | Primary tab — "How long do I have?" Runtime, confidence, fuel source |
 | Calculator | Load calculator — appliance toggles, watt totals, status |
+| 30A Shore Power | "Will the campground pedestal support this load?" — Estimated Amps, headroom, Safe / Near Limit / Likely Trip Breaker |
 | Real-World Tests | Track combinations verified in the field |
 | Fuel Burn Reference | Static tables — burn rates at different loads |
 | Ambient & A/C | Duty cycle guidance by outdoor temperature and setpoint |

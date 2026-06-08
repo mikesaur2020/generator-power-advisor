@@ -31,6 +31,14 @@ const GEN = {
 // ── Battery charging load by state (only applied when strategy = generator) ───
 const BATTERY_LOAD = { full: 0, partial: 300, heavy: 700 };
 
+// ── 30A Shore Power ───────────────────────────────────────────────────────────
+// Standard campground 30A RV pedestal: single 120V leg at 30A.
+//   Theoretical max         = 120V × 30A = 3,600W
+//   Recommended continuous  = 80% of breaker = 24A / 2,880W
+const SHORE_30A = { volts: 120, maxAmps: 30, maxW: 3600, contAmps: 24, contW: 2880 };
+// High-load appliances that warrant switching A/C to Fan Only first.
+const SHORE_HIGHLOAD = ['micro', 'toaster', 'coffee', 'hairdryer', 'iron'];
+
 // ── Fuel burn reference data (from WEN specs / Home Depot listing) ────────────
 // Gas: 5 hrs @ half-load (1450W) on 1.5 gal tank
 // Propane: 11 hrs @ half-load (1300W) on 20 lb tank
@@ -1038,6 +1046,179 @@ function buildAboutHTML() {
   `;
 }
 
+// ── 30A Shore Power Tab ───────────────────────────────────────────────────────
+// Strictly electrical loading on a campground 30A pedestal — no fuel, runtime,
+// weather, or elevation logic. Reuses the shared appliance selection and presets.
+
+// Appliance-only running watts (no generator/battery-assist load — shore power
+// is purely about the electrical draw of the selected appliances).
+function shoreApplianceWatts() {
+  let w = 0;
+  for (const a of APPLIANCES) {
+    if (state.appliances[a.id]) w += a.running;
+  }
+  return w;
+}
+
+function shoreStatus(amps) {
+  if (amps > SHORE_30A.maxAmps)  return { status: 'over', label: '⛔ Likely Trip Breaker' };
+  if (amps > SHORE_30A.contAmps) return { status: 'near', label: '⚠️ Near Limit' };
+  return { status: 'good', label: '✅ Safe' };
+}
+
+function buildShorePowerHTML() {
+  return `<div id="shore-panel"></div>`;
+}
+
+function renderShorePowerTab() {
+  const panel = document.getElementById('shore-panel');
+  if (!panel) return;
+
+  const totalW = shoreApplianceWatts();
+  const amps   = totalW / SHORE_30A.volts;
+  const st     = shoreStatus(amps);
+
+  const headW    = SHORE_30A.contW - totalW;       // headroom to recommended continuous (24A)
+  const headAmps = SHORE_30A.contAmps - amps;
+  const pctOf30  = (totalW / SHORE_30A.maxW) * 100;
+
+  const headClass = headW >= 0 ? 'ft-green' : 'ft-red';
+  const headSign  = headW >= 0 ? '' : '−';
+
+  // Capacity bar fill relative to 30A theoretical max, clamped to 100%
+  const fillPct      = Math.min(100, pctOf30);
+  const recMarkerPct = (SHORE_30A.contW / SHORE_30A.maxW) * 100; // 24A marker = 80%
+
+  // A/C Cooling + high-load appliance recommendation
+  const acCoolOn   = state.appliances['ac_cool'];
+  const highOnList = SHORE_HIGHLOAD.filter(id => state.appliances[id]);
+  const showAcRec  = acCoolOn && highOnList.length > 0;
+  const highNames  = highOnList.map(id => APPLIANCES.find(a => a.id === id).name).join(', ');
+
+  // Active appliances counted in the total
+  const activeChips = APPLIANCES.filter(a => state.appliances[a.id])
+    .map(a => `<span class="preset-combo-chip">${a.name} · ${a.running}W</span>`)
+    .join('') || '<span class="preset-combo-chip chip-meta">No appliances selected</span>';
+
+  panel.innerHTML = `
+    <!-- Intro -->
+    <div class="card">
+      <h2>30A Shore Power</h2>
+      <p class="shore-intro">Will the campground pedestal support this load? This tab checks the electrical draw of your selected appliances against a standard <strong>30A RV pedestal</strong> — a separate use case from generator operation. No fuel, runtime, weather, or elevation logic applies here.</p>
+      <div class="shore-limit-row">
+        <div class="shore-limit">
+          <span class="shore-limit-label">Theoretical limit</span>
+          <span class="shore-limit-val">3,600W · 30A</span>
+        </div>
+        <div class="shore-limit">
+          <span class="shore-limit-label">Recommended continuous (80%)</span>
+          <span class="shore-limit-val accent">2,880W · 24A</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero status -->
+    <div class="card shore-hero shore-hero-${st.status}">
+      <div class="shore-status-badge status-${st.status}">${st.label}</div>
+      <div class="shore-amps-label">Estimated Amps</div>
+      <div class="shore-amps shore-amps-${st.status}">${fmt(amps, 1)}A</div>
+      <div class="shore-watts">${fmtW(totalW)} total running</div>
+
+      <div class="shore-bar">
+        <div class="shore-bar-fill shore-bar-${st.status}" style="width:${fillPct}%"></div>
+        <div class="shore-bar-marker" style="left:${recMarkerPct}%"></div>
+      </div>
+      <div class="shore-bar-legend">
+        <span>0A</span>
+        <span class="shore-bar-rec">24A recommended</span>
+        <span>30A max</span>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="card">
+      <div class="results-grid">
+        <div class="result-block">
+          <div class="result-label">Estimated Amps</div>
+          <div class="result-value accent">${fmt(amps, 1)}A</div>
+          <div class="result-sub">Watts ÷ 120V</div>
+        </div>
+        <div class="result-block">
+          <div class="result-label">Total Running Watts</div>
+          <div class="result-value">${fmtW(totalW)}</div>
+          <div class="result-sub">Selected appliances</div>
+        </div>
+        <div class="result-block">
+          <div class="result-label">Headroom Remaining</div>
+          <div class="result-value ${headClass}">${headSign}${fmtW(Math.abs(headW))}</div>
+          <div class="result-sub">${headSign}${fmt(Math.abs(headAmps), 1)}A to 24A limit</div>
+        </div>
+        <div class="result-block">
+          <div class="result-label">% of 30A Capacity</div>
+          <div class="result-value">${Math.round(pctOf30)}%</div>
+          <div class="result-sub">of 3,600W max</div>
+        </div>
+      </div>
+    </div>
+
+    ${showAcRec ? `
+    <!-- A/C recommendation -->
+    <div class="card shore-rec">
+      <div class="shore-rec-icon">💡</div>
+      <div class="shore-rec-body">
+        <p class="shore-rec-text">Consider switching A/C to Fan Only before using high-load appliances.</p>
+        <p class="shore-rec-sub">A/C Cooling (~1,700W) plus ${highNames} draws heavily on a 30A pedestal. A/C Fan Only (250W) frees up roughly 1,450W of headroom.</p>
+        <button class="shore-rec-btn" onclick="shoreAcFanOnly()">Switch A/C to Fan Only</button>
+      </div>
+    </div>` : ''}
+
+    <!-- Counted load + presets -->
+    <div class="card">
+      <h2>Counted Load</h2>
+      <div class="preset-combo-row" style="display:flex;margin-bottom:12px;">${activeChips}</div>
+      <p class="ft-calc-nudge">Change appliances on the <a class="ft-calc-link" onclick="showTab('calc')">Calculator</a> tab, or apply a preset:</p>
+      <div class="preset-btn-row" id="shore-preset-row"></div>
+    </div>
+
+    <!-- Reference -->
+    <div class="card">
+      <div class="about-section">
+        <h3>How 30A Shore Power Works</h3>
+        <ul class="guidance-list">
+          <li><span>🔌</span><span>A 30A RV service is a single 120V leg at 30A = <strong>3,600W</strong> theoretical maximum.</span></li>
+          <li><span>📊</span><span>Breakers are rated for <strong>80% continuous</strong> draw — <strong>24A / 2,880W</strong> is the safe sustained limit.</span></li>
+          <li><span>⚡</span><span><strong>Amps = Watts ÷ 120.</strong> Keep estimated amps at or below 24A to avoid nuisance trips.</span></li>
+          <li><span>🚦</span><span><strong>Safe</strong> ≤ 24A &nbsp;·&nbsp; <strong>Near Limit</strong> 24–30A &nbsp;·&nbsp; <strong>Likely Trip Breaker</strong> &gt; 30A</span></li>
+          <li><span>🏕️</span><span>This tab ignores fuel, runtime, weather, and elevation — it is strictly about electrical loading on shore power.</span></li>
+        </ul>
+      </div>
+    </div>
+  `;
+
+  renderShorePresetButtons();
+}
+
+function renderShorePresetButtons() {
+  const row = document.getElementById('shore-preset-row');
+  if (!row) return;
+  row.innerHTML = getAllPresets().map(p => `
+    <button class="quick-preset-btn${state.activePresetId === p.id ? ' active' : ''}" onclick="applyPreset('${p.id}')">${p.name}</button>
+  `).join('');
+}
+
+function shoreAcFanOnly() {
+  state.appliances['ac_cool'] = false;
+  state.appliances['ac_fan']  = true;
+  // Keep Calculator DOM toggles in sync if they've been built
+  const cool = document.getElementById('toggle-ac_cool');
+  const fan  = document.getElementById('toggle-ac_fan');
+  if (cool) cool.checked = false;
+  if (fan)  fan.checked  = true;
+  saveState();
+  renderCalculator();
+  renderShorePowerTab();
+}
+
 // ── Presets ───────────────────────────────────────────────────────────────────
 const ELEV_LABELS = { 0: 'Sea level', 1400: 'Sioux Falls', 5280: 'Denver', 7000: '7,000 ft', 8000: '8,000 ft', 9000: '9,000 ft', 11000: '11,000 ft' };
 
@@ -1104,6 +1285,7 @@ function applyPreset(id) {
   saveState();
   renderCalculator();
   renderPresetButtons();
+  renderShorePowerTab();
 }
 
 function saveCurrentAsPreset(name) {
@@ -1809,7 +1991,7 @@ function buildWeatherCard() {
     </div>`;
 }
 
-const TABS = ['ftracker','calc','tests','fuel','ambient','about'];
+const TABS = ['ftracker','calc','shore','tests','fuel','ambient','about'];
 
 function showTab(id) {
   TABS.forEach(t => {
@@ -1822,6 +2004,7 @@ function showTab(id) {
   document.querySelector('.header-collapse-btn').style.display = calcOnly ? '' : 'none';
 
   if (id === 'tests')    renderTests();
+  if (id === 'shore')    renderShorePowerTab();
   if (id === 'ftracker') {
     renderFuelTrackerTab();
     startFtTickTimer();
@@ -1864,6 +2047,7 @@ window.addTest = addTest;
 window.deleteTest = deleteTest;
 window.updateTest = updateTest;
 window.showTab = showTab;
+window.shoreAcFanOnly = shoreAcFanOnly;
 window.applyPreset = applyPreset;
 window.openManagePresets = openManagePresets;
 window.closeManagePresets = closeManagePresets;
@@ -1889,6 +2073,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('panel-ftracker').innerHTML  = buildFuelTrackerHTML();
   document.getElementById('panel-calc').innerHTML      = buildCalculatorHTML();
+  document.getElementById('panel-shore').innerHTML     = buildShorePowerHTML();
   document.getElementById('panel-fuel').innerHTML      = buildFuelHTML();
   document.getElementById('panel-ambient').innerHTML   = buildAmbientHTML();
   document.getElementById('panel-about').innerHTML     = buildAboutHTML();
