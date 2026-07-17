@@ -30,7 +30,7 @@
   /* Text */
   --text: #e8eef6;
   --text-muted: #9fb0c4;
-  --text-faint: #6d7f95;
+  --text-faint: #8b9eb4;
 
   /* Status — RESERVED (Safe / Near / Unsafe) */
   --good: #34d399;
@@ -80,7 +80,7 @@
     --brand-strong: #1f6ad6;
     --text: #101a28;
     --text-muted: #56657a;
-    --text-faint: #8493a6;
+    --text-faint: #5c6b7f;
     --good: #0f9d63;
     --good-tint: rgba(15,157,99,0.13);
     --near: #c77700;
@@ -2005,3 +2005,34 @@ nav button.active .ic { opacity: 1; }
 nav button { display: inline-flex; align-items: center; }
 
 .onboard-sub { font-size: 0.72rem; color: var(--text-muted); margin: -4px 0 12px; line-height: 1.45; }
+
+/* ── RC: default-generator trust cues ── */
+.gen-card-example { background: linear-gradient(180deg, var(--brand-tint) 0%, transparent 60%); }
+.gen-card-hint {
+  display: flex; align-items: flex-start; gap: 7px; margin-top: 11px;
+  font-size: 0.72rem; line-height: 1.45; color: var(--brand-text);
+  border-top: 1px solid var(--border); padding-top: 10px;
+}
+.gen-card-hint .ic { margin-top: 1px; }
+.verdict-example {
+  display: flex; align-items: flex-start; gap: 8px; width: 100%; text-align: left;
+  background: var(--brand-tint); border: 1px solid color-mix(in srgb, var(--brand) 28%, transparent);
+  color: var(--brand-text); border-radius: var(--radius-sm); padding: 9px 12px; margin-bottom: 12px;
+  font-size: 0.74rem; line-height: 1.45; cursor: pointer;
+}
+.verdict-example:hover { background: var(--brand-tint-2); }
+.verdict-example .ic { margin-top: 1px; flex: 0 0 auto; }
+.verdict-example strong { font-weight: 700; }
+
+/* ── RC: icon alignment for migrated spots ── */
+.tracker-btn-label { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+.ft-conf-badge .ic { width: 1em; height: 1em; vertical-align: -0.14em; }
+.gen-spec-row .ic, .derate-row .ic, .fuel-block h3 .ic, .ft-src-propane .ic, .ft-src-gas .ic, .ft-src-none .ic,
+.ft-fuel-heading .ic, .ft-track-status .ic, .ft-no-fuel .ic, .ft-reserve-note .ic, .ft-start-warn .ic,
+.shore-status-badge .ic, .wi-gps-btn .ic, .wi-action-btn .ic, .wi-error .ic,
+.battery-btn .ic, .warn-note .ic, .elev-gps-btn .ic, .tracker-stop-btn .ic, .ft-reset-btn .ic,
+.load-banner .ic, .current-load-box .ic { vertical-align: -0.15em; }
+.guidance-list li span:first-child .ic { width: 1em; height: 1em; vertical-align: -0.12em; }
+.ft-combo-icon .ic { width: 1.15rem; height: 1.15rem; }
+.wf-icon .ic { width: 1.35rem; height: 1.35rem; }
+.shore-rec-icon .ic { width: 1.4rem; height: 1.4rem; }

@@ -21,6 +21,20 @@ const ICONS = {
   timer:    '<circle cx="12" cy="13.5" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 9.5v4.2l2.6 1.6M9.5 3h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
   arrow:    '<path d="M5 12h13M13 6.5l5.5 5.5-5.5 5.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
   wifiOff:  '<path d="M3 4l18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 12.5a7 7 0 018-1M5 9.5a11 11 0 0110-2.3M12 18.5v.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  bulb:     '<path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.8 10.6c.5.5.8 1.2.8 2.4h6c0-1.2.3-1.9.8-2.4A6 6 0 0012 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  sun:      '<circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  moon:     '<path d="M20 14.5A8 8 0 019.5 4 7 7 0 1020 14.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+  star:     '<path d="M12 3.5l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.6l5.8-.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>',
+  help:     '<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.6 9.5a2.5 2.5 0 013.9 2c0 1.5-1.9 1.8-1.9 3M12 16.4v.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  pin:      '<path d="M12 21s6-5.2 6-10a6 6 0 10-12 0c0 4.8 6 10 6 10z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="11" r="2.1" fill="none" stroke="currentColor" stroke-width="2"/>',
+  refresh:  '<path d="M19.5 11a7.5 7.5 0 10-1.6 5.4M19.5 6.5V11h-4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  snow:     '<path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  battery:  '<rect x="3" y="8" width="15" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M21 11.2v1.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  stop:     '<rect x="6.5" y="6.5" width="11" height="11" rx="2" fill="currentColor"/>',
+  pause:    '<path d="M9.5 5.5v13M14.5 5.5v13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
+  chart:    '<path d="M4 20V11M10 20V5M16 20v-6M3 20h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  theme:    '<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 000 17z" fill="currentColor"/>',
+  fuel:     '<path d="M6 20V6a2 2 0 012-2h5a2 2 0 012 2v14M4 20h13M15 9h2.5a1.5 1.5 0 011.5 1.5V15a1.5 1.5 0 003 0V8.5L18 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
 };
 function ic(name, cls) {
   return `<svg class="ic${cls ? ' ' + cls : ''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${ICONS[name] || ''}</svg>`;
@@ -236,31 +250,31 @@ const BUILT_IN_PRESETS = [
     id: 'normal-ac', name: 'Normal A/C', builtIn: true, battery: 'full', elevation: 1400,
     appliances: makeAppliances(['ac_cool','fridge','starlink','usb','tv','leds']),
     description: 'Typical everyday load — A/C cooling on, core devices running.',
-    workflow: '☀️ Daytime Cooling',
+    workflow: 'Daytime Cooling',
   },
   {
     id: 'microwave', name: 'Microwave', builtIn: true, battery: 'full', elevation: 1400,
     appliances: makeAppliances(['ac_fan','fridge','starlink','usb','tv','micro','leds']),
     description: 'A/C switched to Fan Only to free up power for the microwave. Use one high-load appliance at a time.',
-    workflow: '🍳 Cooking',
+    workflow: 'Cooking',
   },
   {
     id: 'coffee', name: 'Coffee Time', builtIn: true, battery: 'full', elevation: 1400,
     appliances: makeAppliances(['ac_fan','fridge','starlink','usb','tv','coffee','leds']),
     description: 'A/C switched to Fan Only to free power for the coffee maker. Temporary — switch back to A/C Cooling after.',
-    workflow: '☕ Morning',
+    workflow: 'Morning',
   },
   {
     id: 'hairdryer', name: 'Hair Dryer', builtIn: true, battery: 'full', elevation: 1400,
     appliances: makeAppliances(['ac_fan','fridge','starlink','usb','hairdryer','leds']),
     description: 'A/C switched to Fan Only to run the hair dryer. Temporary — switch back to A/C Cooling after.',
-    workflow: '💨 Grooming',
+    workflow: 'Grooming',
   },
   {
     id: 'overnight', name: 'Overnight', builtIn: true, battery: 'full', elevation: 1400,
     appliances: makeAppliances(['ac_cool','fridge','starlink','leds']),
     description: 'Minimal low-draw load — TV and USB charging off for the longest runtime overnight.',
-    workflow: '🌙 Overnight',
+    workflow: 'Overnight',
   },
 ];
 
@@ -272,12 +286,13 @@ const state = {
   elevation: 1400,
   elevSource: 'preset', // 'preset' | 'gps' | 'custom'
   generatorId: 'wen-df360ix',
+  generatorConfirmed: false,   // false until the user explicitly sets/confirms their unit
   customGenerators: [],
   tests: [],
   userPresets: [],
   hiddenBuiltIns: [],
   activePresetId: 'normal-ac',
-  quickStartCollapsed: false,
+  quickStartCollapsed: true,   // Fuel Tracker "How to Use" starts collapsed (onboarding lives on the Calculator)
   welcomeDismissed: false,
   // New Fuel Tracker tab
   ft: {
@@ -316,6 +331,7 @@ function loadState() {
     if (saved.elevSource)    state.elevSource = saved.elevSource;
     if (saved.customGenerators) state.customGenerators = saved.customGenerators;
     if (saved.generatorId)   state.generatorId = saved.generatorId;
+    if (saved.generatorConfirmed != null) state.generatorConfirmed = saved.generatorConfirmed;
     if (saved.tests)       state.tests = saved.tests;
     if (saved.userPresets)    state.userPresets = saved.userPresets;
     if (saved.hiddenBuiltIns) state.hiddenBuiltIns = saved.hiddenBuiltIns;
@@ -335,6 +351,7 @@ function saveState() {
     elevation: state.elevation,
     elevSource: state.elevSource,
     generatorId: state.generatorId,
+    generatorConfirmed: state.generatorConfirmed,
     customGenerators: state.customGenerators,
     tests: state.tests,
     userPresets: state.userPresets,
@@ -531,15 +548,15 @@ function renderCalculator() {
     const worstStatus = statuses.includes('over') ? 'over' : statuses.includes('near') ? 'near' : 'good';
     if (worstStatus === 'over') {
       const msgs = [];
-      if (gas.status  === 'over') msgs.push(`⛽ Gas: ${gas.label}`);
-      if (hasProp && prop.status === 'over') msgs.push(`🔵 Propane: ${prop.label}`);
+      if (gas.status  === 'over') msgs.push(`Gas: ${gas.label}`);
+      if (hasProp && prop.status === 'over') msgs.push(`Propane: ${prop.label}`);
       banner.textContent = msgs.join('  ·  ');
       banner.className = 'load-banner load-banner-over';
       banner.style.display = 'block';
     } else if (worstStatus === 'near') {
       const msgs = [];
-      if (gas.status  === 'near') msgs.push('⛽ Gas: Near Limit');
-      if (hasProp && prop.status === 'near') msgs.push('🔵 Propane: Near Limit');
+      if (gas.status  === 'near') msgs.push('Gas: Near Limit');
+      if (hasProp && prop.status === 'near') msgs.push('Propane: Near Limit');
       banner.textContent = msgs.join('  ·  ');
       banner.className = 'load-banner load-banner-near';
       banner.style.display = 'block';
@@ -583,6 +600,17 @@ function populateVerdict(running, peak, maxSurge, derated, gas, prop) {
   const cls = 'v-' + lim.status;            // v-good | v-near | v-over
   const deratePct = Math.round((1 - derated.factor) * 100);
   card.className = 'card verdict-card ' + cls;
+
+  // Trust: make clear this verdict is for the default example until the user sets theirs.
+  const exampleEl = document.getElementById('verdict-example');
+  if (exampleEl) {
+    if (state.generatorConfirmed) {
+      exampleEl.style.display = 'none';
+    } else {
+      exampleEl.style.display = 'flex';
+      exampleEl.innerHTML = `${ic('info')} <span>This result is for the example <strong>${escHtml(currentGen().short)}</strong>. Set your generator for an accurate verdict.</span>`;
+    }
+  }
 
   const pill = document.getElementById('verdict-pill');
   pill.innerHTML = lim.status === 'good' ? ic('check') + ' Safe'
@@ -838,19 +866,21 @@ function buildGeneratorCard() {
   const g = currentGen();
   const ratings = `${ic('gas')} ${g.gas.running.toLocaleString()}W · ${g.gas.peak.toLocaleString()}W peak`
     + (g.prop ? ` &nbsp;·&nbsp; ${ic('propane')} ${g.prop.running.toLocaleString()}W · ${g.prop.peak.toLocaleString()}W peak` : '');
+  const confirmed = state.generatorConfirmed;
   return `
-    <div class="card gen-card">
+    <div class="card gen-card${confirmed ? '' : ' gen-card-example'}">
       <div class="gen-card-top">
         <div class="gen-card-info">
-          <div class="gen-card-label">Your Generator</div>
+          <div class="gen-card-label">${confirmed ? 'Your Generator' : 'Example Generator'}</div>
           <div class="gen-card-name">${escHtml(g.short)}${g.builtIn ? '' : ' <span class="gen-custom-tag">custom</span>'}</div>
           <div class="gen-card-kind">${escHtml(g.kind)}</div>
         </div>
-        <button class="gen-change-btn" onclick="openGenPicker()">Change</button>
+        <button class="gen-change-btn" onclick="openGenPicker()">${confirmed ? 'Change' : 'Set yours'}</button>
       </div>
       <div class="gen-card-badges">${fuelBadgesHTML(g)}</div>
       <div class="gen-card-ratings">${ratings}</div>
       <div class="gen-card-source"><span class="basis-dot ${g.builtIn ? 'basis-spec' : 'basis-input'}" aria-hidden="true"></span>${g.builtIn ? 'Manufacturer-published spec — verify against your unit' : 'Values you entered'}</div>
+      ${confirmed ? '' : `<div class="gen-card-hint">${ic('info')} This is a default example. Set your own generator so the verdict below is accurate for you.</div>`}
     </div>`;
 }
 
@@ -864,8 +894,8 @@ function closeGenPicker() {
 
 function genRowHTML(g) {
   const active = g.id === state.generatorId;
-  const sub = `${escHtml(g.kind)} · ⛽ ${g.gas.running.toLocaleString()}W`
-    + (g.prop ? ` · 🔵 ${g.prop.running.toLocaleString()}W` : '');
+  const sub = `${escHtml(g.kind)} · ${ic('gas')} ${g.gas.running.toLocaleString()}W`
+    + (g.prop ? ` · ${ic('propane')} ${g.prop.running.toLocaleString()}W` : '');
   return `
     <div class="gen-row ${active ? 'gen-row-active' : ''}" onclick="confirmGenSpecs('${g.id}')">
       <div class="gen-row-main">
@@ -928,13 +958,13 @@ function confirmGenSpecs(id) {
       <div class="gen-confirm-kind">${escHtml(g.kind)}</div>
       <div class="gen-card-badges" style="margin:12px 0 14px;">${fuelBadgesHTML(g)}</div>
       <div class="gen-spec-table">
-        <div class="gen-spec-row"><span>⛽ Gasoline — running</span><b>${g.gas.running.toLocaleString()} W</b></div>
-        <div class="gen-spec-row"><span>⛽ Gasoline — peak / surge</span><b>${g.gas.peak.toLocaleString()} W</b></div>
-        <div class="gen-spec-row"><span>⛽ Gas tank</span><b>${g.gas.tankGal} gal</b></div>
+        <div class="gen-spec-row"><span>${ic('gas')} Gasoline — running</span><b>${g.gas.running.toLocaleString()} W</b></div>
+        <div class="gen-spec-row"><span>${ic('gas')} Gasoline — peak / surge</span><b>${g.gas.peak.toLocaleString()} W</b></div>
+        <div class="gen-spec-row"><span>${ic('gas')} Gas tank</span><b>${g.gas.tankGal} gal</b></div>
         ${g.prop ? `
-        <div class="gen-spec-row"><span>🔵 Propane — running</span><b>${g.prop.running.toLocaleString()} W</b></div>
-        <div class="gen-spec-row"><span>🔵 Propane — peak / surge</span><b>${g.prop.peak.toLocaleString()} W</b></div>
-        <div class="gen-spec-row"><span>🔵 Propane tank</span><b>${g.prop.tankLb} lb</b></div>` : ''}
+        <div class="gen-spec-row"><span>${ic('propane')} Propane — running</span><b>${g.prop.running.toLocaleString()} W</b></div>
+        <div class="gen-spec-row"><span>${ic('propane')} Propane — peak / surge</span><b>${g.prop.peak.toLocaleString()} W</b></div>
+        <div class="gen-spec-row"><span>${ic('propane')} Propane tank</span><b>${g.prop.tankLb} lb</b></div>` : ''}
       </div>
       <p class="gen-confirm-note">${escHtml(g.source || 'Typical published specs')}. Confirm these match your unit — you can adjust them if they differ.</p>
       <div class="gen-confirm-btns">
@@ -956,6 +986,7 @@ function cloneGenToCustom(id) {
 
 function selectGenerator(id) {
   state.generatorId = id;
+  state.generatorConfirmed = true;   // the user has now explicitly chosen their unit
   // Gas-only unit → propane cannot be connected.
   if (!genHasPropane()) {
     state.ft.propaneConnected = false;
@@ -1034,6 +1065,7 @@ function saveCustomGen(editId) {
   state.customGenerators = (state.customGenerators || []).filter(x => x.id !== gen.id);
   state.customGenerators.push(gen);
   state.generatorId = gen.id;
+  state.generatorConfirmed = true;
   if (!hasProp) { state.ft.propaneConnected = false; if (state.ft.trackingFuel === 'propane') state.ft.trackingFuel = null; }
   saveState();
   closeGenPicker();
@@ -1089,6 +1121,7 @@ function buildApplianceRow(a) {
       <div class="toggle-wrap">
         <label class="toggle">
           <input type="checkbox" id="toggle-${a.id}" ${checked ? 'checked' : ''}
+            aria-label="${escHtml(a.name)}"
             onchange="toggleAppliance('${a.id}')">
           <span class="slider"></span>
         </label>
@@ -1121,6 +1154,7 @@ function buildCalculatorHTML() {
 
     <!-- Verdict-first summary -->
     <div class="card verdict-card" id="verdict-card" role="status" aria-live="polite">
+      <button class="verdict-example" id="verdict-example" style="display:none" onclick="openGenPicker()"></button>
       <div class="verdict-top">
         <span class="verdict-pill" id="verdict-pill">—</span>
         <div class="verdict-top-right">
@@ -1189,8 +1223,8 @@ function buildCalculatorHTML() {
 
         <!-- GPS buttons -->
         <div class="elev-gps-row">
-          <button class="elev-gps-btn" onclick="getGpsElevation()">📍 Use My Location</button>
-          <button class="elev-gps-btn elev-refresh-btn" id="gps-refresh-btn" onclick="getGpsElevation()" style="display:none">🔄 Refresh Location</button>
+          <button class="elev-gps-btn" onclick="getGpsElevation()">${ic('pin')} Use My Location</button>
+          <button class="elev-gps-btn elev-refresh-btn" id="gps-refresh-btn" onclick="getGpsElevation()" style="display:none">${ic('refresh')} Refresh Location</button>
         </div>
         <div class="elev-gps-status" id="gps-status"></div>
 
@@ -1209,11 +1243,11 @@ function buildCalculatorHTML() {
           <div class="derate-row"><span>Current Elevation</span><span id="derate-elev">—</span></div>
           <div class="derate-row"><span>Generator Derating</span><span id="derate-pct" class="derate-pct">—</span></div>
           <div class="derate-divider"></div>
-          <div class="derate-row"><span>⛽ Gas Running Capacity</span><span id="derate-gas-run">—</span></div>
-          <div class="derate-row"><span>⛽ Gas Peak Capacity</span><span id="derate-gas-peak">—</span></div>
+          <div class="derate-row"><span>${ic('gas')} Gas Running Capacity</span><span id="derate-gas-run">—</span></div>
+          <div class="derate-row"><span>${ic('gas')} Gas Peak Capacity</span><span id="derate-gas-peak">—</span></div>
           <div id="derate-prop-wrap">
-            <div class="derate-row"><span>🔵 Propane Running Capacity</span><span id="derate-prop-run">—</span></div>
-            <div class="derate-row"><span>🔵 Propane Peak Capacity</span><span id="derate-prop-peak">—</span></div>
+            <div class="derate-row"><span>${ic('propane')} Propane Running Capacity</span><span id="derate-prop-run">—</span></div>
+            <div class="derate-row"><span>${ic('propane')} Propane Peak Capacity</span><span id="derate-prop-peak">—</span></div>
           </div>
           <p class="derate-note">Derated values are used throughout the app for status and headroom calculations.</p>
         </div>
@@ -1255,7 +1289,7 @@ function buildCalculatorHTML() {
 
       <div class="fuel-grid">
         <div class="fuel-block">
-          <h3 class="gas">⛽ Gasoline</h3>
+          <h3 class="gas">${ic('gas')} Gasoline</h3>
           <div id="gas-badge" class="status-badge">—</div>
           <div class="result-sub" id="gas-run-pct"></div>
           <div class="headroom-row"><span>Effective capacity</span><span id="gas-capacity" style="color:var(--text-muted);font-size:0.68rem">—</span></div>
@@ -1263,7 +1297,7 @@ function buildCalculatorHTML() {
           <div class="headroom-row"><span>Peak headroom</span><span id="gas-peak-head">—</span></div>
         </div>
         <div class="fuel-block" id="fuelblock-prop">
-          <h3 class="propane">🔵 Propane</h3>
+          <h3 class="propane">${ic('propane')} Propane</h3>
           <div id="prop-badge" class="status-badge">—</div>
           <div class="result-sub" id="prop-run-pct"></div>
           <div class="headroom-row"><span>Effective capacity</span><span id="prop-capacity" style="color:var(--text-muted);font-size:0.68rem">—</span></div>
@@ -1298,16 +1332,16 @@ function buildCalculatorHTML() {
         <p class="batt-label" style="margin-top:14px;">Charging Strategy</p>
         <div class="battery-selector">
           <button class="battery-btn ${state.chargeStrategy === 'solar' ? 'active' : ''}" onclick="setChargeStrategy('solar')">
-            ☀️ Solar Only
+            ${ic('sun')} Solar Only
           </button>
           <button class="battery-btn ${state.chargeStrategy === 'generator' ? 'active' : ''}" onclick="setChargeStrategy('generator')">
-            ⚡ Generator Assist
+            ${ic('bolt')} Generator Assist
           </button>
         </div>
 
         <div id="batt-strategy-note" class="batt-strategy-note"></div>
         <div id="batt-solar-info" class="batt-solar-info" style="display:none">
-          ℹ️ Battery is not full, but generator charging load is not included because Solar Only is selected.
+          ${ic('info')} Battery is not full, but generator charging load is not included because Solar Only is selected.
         </div>
       </div>
     </div>
@@ -1324,7 +1358,7 @@ function buildCalculatorHTML() {
         <div class="ac-divider"></div>
         ${always.map(buildApplianceRow).join('')}
         <div class="warn-note" id="ac-warn" style="display:none">
-          ⚠️ A/C Cooling is active. Turn it off before enabling Fan Only.
+          ${ic('alert')} A/C Cooling is active. Turn it off before enabling Fan Only.
         </div>
       </div>
     </div>
@@ -1342,7 +1376,7 @@ function buildCalculatorHTML() {
         </p>
         ${highload.map(buildApplianceRow).join('')}
         <div class="warn-note" id="highload-warn" style="display:none">
-          ⚠️ A/C Cooling is active. Switch to Fan Only before using high-load appliances.
+          ${ic('alert')} A/C Cooling is active. Switch to Fan Only before using high-load appliances.
         </div>
       </div>
     </div>
@@ -1421,15 +1455,15 @@ async function lookupElevation(lat, lon) {
 
 async function getGpsElevation() {
   if (!navigator.geolocation) {
-    setGpsStatus('⚠️ This browser does not support GPS location.', true);
+    setGpsStatus('This browser does not support GPS location.', true);
     return;
   }
   if (!navigator.onLine) {
-    setGpsStatus('⚠️ GPS elevation lookup requires internet access.', true);
+    setGpsStatus('GPS elevation lookup requires internet access.', true);
     return;
   }
 
-  setGpsStatus('📍 Requesting location…', false);
+  setGpsStatus('Requesting location…', false);
   const gpsBtn = document.getElementById('gps-refresh-btn');
 
   navigator.geolocation.getCurrentPosition(
@@ -1445,18 +1479,18 @@ async function getGpsElevation() {
         syncPresetButtons(ft);
         saveState();
         renderCalculator();
-        setGpsStatus(`📍 Elevation estimated from GPS: ${ft.toLocaleString()} ft`, false);
+        setGpsStatus(`Elevation from GPS: ${ft.toLocaleString()} ft`, false);
       } catch (_) {
-        setGpsStatus('⚠️ Could not retrieve elevation. Check internet connection.', true);
+        setGpsStatus('Could not retrieve elevation. Check internet connection.', true);
       }
     },
     err => {
       const msgs = {
-        1: '⚠️ Location permission denied. Enable in browser settings.',
-        2: '⚠️ Location unavailable. Try again or enter manually.',
-        3: '⚠️ Location request timed out. Try again.',
+        1: 'Location permission denied. Enable in browser settings.',
+        2: 'Location unavailable. Try again or enter manually.',
+        3: 'Location request timed out. Try again.',
       };
-      setGpsStatus(msgs[err.code] || '⚠️ GPS error. Try again.', true);
+      setGpsStatus(msgs[err.code] || 'GPS error. Try again.', true);
     },
     { timeout: 10000, maximumAge: 60000 }
   );
@@ -1558,11 +1592,11 @@ function renderTests() {
   if (!tbody) return;
   tbody.innerHTML = state.tests.map((t, i) => `
     <tr>
-      <td><input type="text" value="${escHtml(t.loads)}" onchange="updateTest(${i},'loads',this.value)" style="min-width:200px"></td>
-      <td class="check-cell"><input type="checkbox" ${t.gas ? 'checked' : ''} onchange="updateTest(${i},'gas',this.checked)"></td>
-      <td class="check-cell"><input type="checkbox" ${t.prop ? 'checked' : ''} onchange="updateTest(${i},'prop',this.checked)"></td>
-      <td><textarea onchange="updateTest(${i},'notes',this.value)">${escHtml(t.notes || '')}</textarea></td>
-      <td><button class="del-btn" onclick="deleteTest(${i})">✕</button></td>
+      <td><input type="text" value="${escHtml(t.loads)}" aria-label="Load combination" onchange="updateTest(${i},'loads',this.value)" style="min-width:200px"></td>
+      <td class="check-cell"><input type="checkbox" ${t.gas ? 'checked' : ''} aria-label="Confirmed working on gasoline" onchange="updateTest(${i},'gas',this.checked)"></td>
+      <td class="check-cell"><input type="checkbox" ${t.prop ? 'checked' : ''} aria-label="Confirmed working on propane" onchange="updateTest(${i},'prop',this.checked)"></td>
+      <td><textarea aria-label="Notes" onchange="updateTest(${i},'notes',this.value)">${escHtml(t.notes || '')}</textarea></td>
+      <td><button class="del-btn" aria-label="Delete this row" onclick="deleteTest(${i})">✕</button></td>
     </tr>`).join('');
 }
 
@@ -1621,8 +1655,8 @@ function buildFuelHTML() {
           <thead>
             <tr>
               <th rowspan="2">Load Level</th>
-              <th colspan="3" class="gas-col">⛽ Gasoline</th>
-              ${hasProp ? '<th colspan="3" class="prop-col">🔵 Propane</th>' : ''}
+              <th colspan="3" class="gas-col">${ic('gas')} Gasoline</th>
+              ${hasProp ? `<th colspan="3" class="prop-col">${ic('propane')} Propane</th>` : ''}
             </tr>
             <tr>
               <th class="gas-col">Watts</th><th class="gas-col">Hrs/${fmt(gasTank, gasTank % 1 ? 1 : 0)} gal</th><th class="gas-col">Hrs/5 gal</th>
@@ -1640,11 +1674,11 @@ function buildFuelHTML() {
     <div class="card">
       <h2>Caveats</h2>
       <ul class="guidance-list">
-        <li><span>📊</span><span>Burn rates scale proportionally from published half-load figures. Real burn varies.</span></li>
-        <li><span>🌡️</span><span>Hot weather increases A/C duty cycle and average fuel use.</span></li>
-        <li><span>⛰️</span><span>High elevation reduces generator output — use the Elevation section to account for derating.</span></li>
-        <li><span>🔋</span><span>ECO mode can significantly extend runtime at light loads.</span></li>
-        <li><span>⛽</span><span>Tank fill level, fuel age, and generator condition all affect real runtime.</span></li>
+        <li><span>${ic('chart')}</span><span>Burn rates scale proportionally from published half-load figures. Real burn varies.</span></li>
+        <li><span>${ic('thermo')}</span><span>Hot weather increases A/C duty cycle and average fuel use.</span></li>
+        <li><span>${ic('mountain')}</span><span>High elevation reduces generator output — use the Elevation section to account for derating.</span></li>
+        <li><span>${ic('battery')}</span><span>ECO mode can significantly extend runtime at light loads.</span></li>
+        <li><span>${ic('gas')}</span><span>Tank fill level, fuel age, and generator condition all affect real runtime.</span></li>
       </ul>
       <p style="font-size:0.68rem;color:var(--text-muted);margin-top:8px;">
         Figures for <strong>${escHtml(g.short)}</strong> — ${escHtml(g.source || 'typical published specs')}. Values are editable via a custom generator.
@@ -1686,9 +1720,9 @@ function buildAmbientHTML() {
         average fuel burn and how long your fuel lasts.
       </p>
       <ul class="guidance-list">
-        <li><span>❄️</span><span>Lower setpoint (e.g. 68°F) → compressor runs longer → more fuel</span></li>
-        <li><span>🌡️</span><span>Higher setpoint (e.g. 78°F) → compressor rests more → less fuel</span></li>
-        <li><span>☀️</span><span>Hotter outdoor temp → longer compressor runtime regardless of setpoint</span></li>
+        <li><span>${ic('snow')}</span><span>Lower setpoint (e.g. 68°F) → compressor runs longer → more fuel</span></li>
+        <li><span>${ic('thermo')}</span><span>Higher setpoint (e.g. 78°F) → compressor rests more → less fuel</span></li>
+        <li><span>${ic('sun')}</span><span>Hotter outdoor temp → longer compressor runtime regardless of setpoint</span></li>
         <li><span>💧</span><span>High humidity may keep A/C running even at moderate temperatures</span></li>
         <li><span>⛱️</span><span>Shade / awning can reduce duty cycle more than changing setpoint a few degrees</span></li>
         <li><span>🚪</span><span>Frequent door openings add heat gain and raise duty cycle</span></li>
@@ -1785,13 +1819,13 @@ function buildAboutHTML() {
       <div class="about-section">
         <h3>Key Assumptions</h3>
         <ul class="guidance-list">
-          <li><span>⚡</span><span>Micro-Air EasyStart reduces A/C <em>startup surge only</em> — running watts remain ~1,700W when the compressor is active.</span></li>
-          <li><span>☀️</span><span>Solar Only (default): the 300W roof solar panel is expected to maintain/recover the batteries. No generator charging load is added regardless of battery state.</span></li>
-          <li><span>⚡</span><span>Generator Assist: adds estimated converter charging load when intentionally using the generator to recover batteries after extended clouds or heavy discharge. Partial = +300W, Heavy = +700W.</span></li>
-          <li><span>🌙</span><span>Starlink overnight is fine when the generator is running — generator/converter power the 12V system so battery drain is minimal.</span></li>
-          <li><span>⚠️</span><span>Peak load = selected running load + <em>largest single</em> startup surge (appliances don't all surge simultaneously).</span></li>
-          <li><span>🔋</span><span>Flooded lead-acid batteries should not be deeply discharged regularly — try to keep them above 50% (68Ah used of 136Ah).</span></li>
-          <li><span>📊</span><span>Good = running ≤85% of capacity and peak ≤ peak rating. Near Limit = running 85–100%. Over Limit = either threshold exceeded.</span></li>
+          <li><span>${ic('bolt')}</span><span>Micro-Air EasyStart reduces A/C <em>startup surge only</em> — running watts remain ~1,700W when the compressor is active.</span></li>
+          <li><span>${ic('sun')}</span><span>Solar Only (default): the 300W roof solar panel is expected to maintain/recover the batteries. No generator charging load is added regardless of battery state.</span></li>
+          <li><span>${ic('bolt')}</span><span>Generator Assist: adds estimated converter charging load when intentionally using the generator to recover batteries after extended clouds or heavy discharge. Partial = +300W, Heavy = +700W.</span></li>
+          <li><span>${ic('moon')}</span><span>Starlink overnight is fine when the generator is running — generator/converter power the 12V system so battery drain is minimal.</span></li>
+          <li><span>${ic('alert')}</span><span>Peak load = selected running load + <em>largest single</em> startup surge (appliances don't all surge simultaneously).</span></li>
+          <li><span>${ic('battery')}</span><span>Flooded lead-acid batteries should not be deeply discharged regularly — try to keep them above 50% (68Ah used of 136Ah).</span></li>
+          <li><span>${ic('chart')}</span><span>Good = running ≤85% of capacity and peak ≤ peak rating. Near Limit = running 85–100%. Over Limit = either threshold exceeded.</span></li>
         </ul>
       </div>
     </div>
@@ -1837,9 +1871,9 @@ function shoreApplianceWatts() {
 }
 
 function shoreStatus(amps) {
-  if (amps > SHORE_30A.maxAmps)  return { status: 'over', label: '⛔ Likely Trip Breaker' };
-  if (amps > SHORE_30A.contAmps) return { status: 'near', label: '⚠️ Near Limit' };
-  return { status: 'good', label: '✅ Safe' };
+  if (amps > SHORE_30A.maxAmps)  return { status: 'over', label: `${ic('ban')} Likely Trip Breaker` };
+  if (amps > SHORE_30A.contAmps) return { status: 'near', label: `${ic('alert')} Near Limit` };
+  return { status: 'good', label: `${ic('check')} Safe` };
 }
 
 function buildShorePowerHTML() {
@@ -1940,7 +1974,7 @@ function renderShorePowerTab() {
     ${showAcRec ? `
     <!-- A/C recommendation -->
     <div class="card shore-rec">
-      <div class="shore-rec-icon">💡</div>
+      <div class="shore-rec-icon">${ic('bulb')}</div>
       <div class="shore-rec-body">
         <p class="shore-rec-text">Consider switching A/C to Fan Only before using high-load appliances.</p>
         <p class="shore-rec-sub">A/C Cooling (~1,700W) plus ${highNames} draws heavily on a 30A pedestal. A/C Fan Only (250W) frees up roughly 1,450W of headroom.</p>
@@ -1961,9 +1995,9 @@ function renderShorePowerTab() {
       <div class="about-section">
         <h3>How 30A Shore Power Works</h3>
         <ul class="guidance-list">
-          <li><span>🔌</span><span>A 30A RV service is a single 120V leg at 30A = <strong>3,600W</strong> theoretical maximum.</span></li>
-          <li><span>📊</span><span>Breakers are rated for <strong>80% continuous</strong> draw — <strong>24A / 2,880W</strong> is the safe sustained limit.</span></li>
-          <li><span>⚡</span><span><strong>Amps = Watts ÷ 120.</strong> Keep estimated amps at or below 24A to avoid nuisance trips.</span></li>
+          <li><span>${ic('plug')}</span><span>A 30A RV service is a single 120V leg at 30A = <strong>3,600W</strong> theoretical maximum.</span></li>
+          <li><span>${ic('chart')}</span><span>Breakers are rated for <strong>80% continuous</strong> draw — <strong>24A / 2,880W</strong> is the safe sustained limit.</span></li>
+          <li><span>${ic('bolt')}</span><span><strong>Amps = Watts ÷ 120.</strong> Keep estimated amps at or below 24A to avoid nuisance trips.</span></li>
           <li><span>🚦</span><span><strong>Safe</strong> ≤ 24A &nbsp;·&nbsp; <strong>Near Limit</strong> 24–30A &nbsp;·&nbsp; <strong>Likely Trip Breaker</strong> &gt; 30A</span></li>
           <li><span>🏕️</span><span>This tab ignores fuel, runtime, weather, and elevation — it is strictly about electrical loading on shore power.</span></li>
         </ul>
@@ -2155,9 +2189,9 @@ function ftRuntimes(loadW) {
 }
 
 function ftConfidence(hrs) {
-  if (hrs >= 10) return { icon: '✅', label: 'High Confidence',     css: 'ft-conf-high',   desc: 'Estimated runtime exceeds 10 hours.' };
-  if (hrs >= 6)  return { icon: '⚠️', label: 'Moderate Confidence', css: 'ft-conf-mid',    desc: 'Estimated runtime between 6 and 10 hours.' };
-  return           { icon: '❌', label: 'Low Confidence',           css: 'ft-conf-low',    desc: 'Estimated runtime less than 6 hours.' };
+  if (hrs >= 10) return { icon: ic('check'), label: 'High Confidence',     css: 'ft-conf-high',   desc: 'Estimated runtime exceeds 10 hours.' };
+  if (hrs >= 6)  return { icon: ic('alert'), label: 'Moderate Confidence', css: 'ft-conf-mid',    desc: 'Estimated runtime between 6 and 10 hours.' };
+  return           { icon: ic('ban'),   label: 'Low Confidence',           css: 'ft-conf-low',    desc: 'Estimated runtime less than 6 hours.' };
 }
 
 function ftEmptyTime(fromMs, hrsRemaining) {
@@ -2268,14 +2302,14 @@ function closeHelp() {
 function buildQuickStartCard() {
   if (state.quickStartCollapsed) {
     return `<div class="card qs-collapsed-bar">
-      <span>${ic('info')} How to Use</span>
+      <span>How to Use</span>
       <button class="qs-toggle-btn" onclick="toggleQuickStart()">Show</button>
     </div>`;
   }
   return `
     <div class="card qs-card">
       <div class="qs-header">
-        <h2>${ic('info')} How to Use</h2>
+        <h2>How to Use</h2>
         <button class="qs-toggle-btn" onclick="toggleQuickStart()">Hide</button>
       </div>
       <ol class="qs-list">
@@ -2303,7 +2337,7 @@ function buildQuickStartCard() {
 function buildWhatAmICard() {
   return `
     <details class="card what-card">
-      <summary class="what-summary">❓ What am I looking at?</summary>
+      <summary class="what-summary">What am I looking at?</summary>
       <dl class="what-list">
         <dt>Active Fuel Source</dt>
         <dd>The fuel the generator is currently consuming. When propane is connected it is always active.</dd>
@@ -2312,7 +2346,7 @@ function buildWhatAmICard() {
         <dt>Combined Runtime</dt>
         <dd>Maximum potential runtime: propane first, then gasoline after a manual restart. When propane runs out, the generator stops — disconnect the LPG hose and restart on gasoline. The generator will not switch fuels automatically.</dd>
         <dt>Overnight Confidence</dt>
-        <dd>An estimate of whether fuel will last through the night. High ✅ = 10+ hrs, Moderate ⚠️ = 6–10 hrs, Low ❌ = under 6 hrs.</dd>
+        <dd>An estimate of whether fuel will last through the night. High = 10+ hrs, Moderate = 6–10 hrs, Low = under 6 hrs.</dd>
         <dt>Propane Only vs Combined</dt>
         <dd>Two separate confidence values: one assuming propane only, one assuming the manual propane→gasoline switch is made.</dd>
       </dl>
@@ -2321,19 +2355,19 @@ function buildWhatAmICard() {
 
 function buildWorkflowsCard() {
   const workflows = [
-    { icon: '☀️', title: 'Daytime Cooling', preset: 'Normal A/C', fuel: 'Either fuel', note: 'Maximum cooling. Highest generator load. Best used on gasoline for full capacity.' },
-    { icon: '🌙', title: 'Overnight Cooling', preset: 'Overnight', fuel: 'Propane recommended', note: 'Lower load. Propane gives ~7 hrs on a 20 lb tank at this load. <strong>Generator will not auto-switch to gasoline if propane runs out.</strong>' },
-    { icon: '☕', title: 'Morning Coffee', preset: 'Coffee Time', fuel: 'Either fuel', note: 'Switch A/C to Fan Only first — the preset does this automatically. Temporary; switch back after.' },
-    { icon: '🍳', title: 'Microwave Cooking', preset: 'Microwave', fuel: 'Either fuel', note: 'Switch A/C to Fan Only first — the preset does this automatically. One high-load appliance at a time.' },
-    { icon: '💨', title: 'Hair Dryer', preset: 'Hair Dryer', fuel: 'Either fuel', note: 'Switch A/C to Fan Only first — the preset does this automatically. Temporary; switch back after.' },
+    { icon: 'sun',  title: 'Daytime Cooling', preset: 'Normal A/C', fuel: 'Either fuel', note: 'Maximum cooling. Highest generator load. Best used on gasoline for full capacity.' },
+    { icon: 'moon', title: 'Overnight Cooling', preset: 'Overnight', fuel: 'Propane recommended', note: 'Lower load. Propane gives ~7 hrs on a 20 lb tank at this load. <strong>Generator will not auto-switch to gasoline if propane runs out.</strong>' },
+    { icon: 'bolt', title: 'Morning Coffee', preset: 'Coffee Time', fuel: 'Either fuel', note: 'Switch A/C to Fan Only first — the preset does this automatically. Temporary; switch back after.' },
+    { icon: 'bolt', title: 'Microwave Cooking', preset: 'Microwave', fuel: 'Either fuel', note: 'Switch A/C to Fan Only first — the preset does this automatically. One high-load appliance at a time.' },
+    { icon: 'bolt', title: 'Hair Dryer', preset: 'Hair Dryer', fuel: 'Either fuel', note: 'Switch A/C to Fan Only first — the preset does this automatically. Temporary; switch back after.' },
   ];
   return `
     <div class="card">
-      <h2>⭐ Recommended Workflows</h2>
+      <h2>Recommended Workflows</h2>
       <div class="wf-grid">
         ${workflows.map(w => `
           <div class="wf-card">
-            <div class="wf-icon">${w.icon}</div>
+            <div class="wf-icon">${ic(w.icon)}</div>
             <div class="wf-title">${w.title}</div>
             <div class="wf-row"><span>Preset</span><span>${w.preset}</span></div>
             <div class="wf-row"><span>Fuel</span><span>${w.fuel}</span></div>
@@ -2348,17 +2382,17 @@ function ftComboGuidance(hasProp, propane, gas) {
   if (!hasProp) {
     if (gas) return `
       <div class="ft-combo-header ft-combo-gas">
-        <span class="ft-combo-icon">⛽</span>
+        <span class="ft-combo-icon">${ic('gas')}</span>
         <span>Gasoline Only</span>
       </div>
       <ul class="ft-combo-list">
-        <li>⛽ <strong>Active fuel: Gasoline.</strong> This generator runs on gasoline only.</li>
-        <li>📦 Runtime is limited to the gasoline tank. Refuel to extend.</li>
-        <li>💡 Lowering the load (fewer high-draw appliances) is the main way to stretch runtime.</li>
+        <li>${ic('gas')} <strong>Active fuel: Gasoline.</strong> This generator runs on gasoline only.</li>
+        <li>${ic('fuel')} Runtime is limited to the gasoline tank. Refuel to extend.</li>
+        <li>${ic('bulb')} Lowering the load (fewer high-draw appliances) is the main way to stretch runtime.</li>
       </ul>`;
     return `
       <div class="ft-combo-header ft-combo-none">
-        <span class="ft-combo-icon">⛔</span>
+        <span class="ft-combo-icon">${ic('ban')}</span>
         <span>No Fuel Available</span>
       </div>
       <ul class="ft-combo-list">
@@ -2367,12 +2401,12 @@ function ftComboGuidance(hasProp, propane, gas) {
   }
   if (propane && gas) return `
     <div class="ft-combo-header ft-combo-both">
-      <span class="ft-combo-icon">🔥⛽</span>
+      <span class="ft-combo-icon">${ic('propane')}</span>
       <span>Propane (Active) + Gasoline (Reserve)</span>
     </div>
     <ul class="ft-combo-list">
-      <li>🔥 <strong>Active fuel: Propane.</strong> Gasoline is not consumed while propane is connected.</li>
-      <li>🛑 <strong>No auto-switch:</strong> If propane runs out, the generator shuts down — it will not switch to gasoline automatically.</li>
+      <li>${ic('propane')} <strong>Active fuel: Propane.</strong> Gasoline is not consumed while propane is connected.</li>
+      <li>${ic('ban')} <strong>No auto-switch:</strong> If propane runs out, the generator shuts down — it will not switch to gasoline automatically.</li>
       <li class="ft-combo-steps-label">To continue on gasoline after propane is depleted:</li>
       <li class="ft-combo-step">1. Generator stops when propane is exhausted.</li>
       <li class="ft-combo-step">2. Disconnect the LPG regulator hose.</li>
@@ -2380,29 +2414,29 @@ function ftComboGuidance(hasProp, propane, gas) {
     </ul>`;
   if (propane && !gas) return `
     <div class="ft-combo-header ft-combo-prop">
-      <span class="ft-combo-icon">🔥</span>
+      <span class="ft-combo-icon">${ic('propane')}</span>
       <span>Propane Only</span>
     </div>
     <ul class="ft-combo-list">
-      <li>🔥 <strong>Active fuel: Propane.</strong> Generator runs entirely on LPG.</li>
-      <li>🛑 If propane is exhausted, the generator <strong>shuts down</strong> — it will not auto-switch to gasoline.</li>
-      <li>📦 Runtime is limited to your propane tank. No gasoline reserve available.</li>
-      <li>💡 If gasoline is available in the tank, toggle "Gasoline Available" above to see combined runtime potential.</li>
+      <li>${ic('propane')} <strong>Active fuel: Propane.</strong> Generator runs entirely on LPG.</li>
+      <li>${ic('ban')} If propane is exhausted, the generator <strong>shuts down</strong> — it will not auto-switch to gasoline.</li>
+      <li>${ic('fuel')} Runtime is limited to your propane tank. No gasoline reserve available.</li>
+      <li>${ic('bulb')} If gasoline is available in the tank, toggle "Gasoline Available" above to see combined runtime potential.</li>
     </ul>`;
   if (!propane && gas) return `
     <div class="ft-combo-header ft-combo-gas">
-      <span class="ft-combo-icon">⛽</span>
+      <span class="ft-combo-icon">${ic('gas')}</span>
       <span>Gasoline Only</span>
     </div>
     <ul class="ft-combo-list">
-      <li>⛽ <strong>Active fuel: Gasoline.</strong> No propane is connected, so the generator uses the gasoline tank.</li>
-      <li>📦 Runtime is limited to the gasoline tank. No propane reserve.</li>
-      <li>⚠️ <strong>Auto-switch to propane:</strong> If a propane hose is connected while the generator is running on gasoline, the generator will automatically switch to propane.</li>
-      <li>💡 To run on propane, connect the LPG hose and set Propane Connected = Yes above — the generator will switch automatically.</li>
+      <li>${ic('gas')} <strong>Active fuel: Gasoline.</strong> No propane is connected, so the generator uses the gasoline tank.</li>
+      <li>${ic('fuel')} Runtime is limited to the gasoline tank. No propane reserve.</li>
+      <li>${ic('alert')} <strong>Auto-switch to propane:</strong> If a propane hose is connected while the generator is running on gasoline, the generator will automatically switch to propane.</li>
+      <li>${ic('bulb')} To run on propane, connect the LPG hose and set Propane Connected = Yes above — the generator will switch automatically.</li>
     </ul>`;
   return `
     <div class="ft-combo-header ft-combo-none">
-      <span class="ft-combo-icon">⛔</span>
+      <span class="ft-combo-icon">${ic('ban')}</span>
       <span>No Fuel Available</span>
     </div>
     <ul class="ft-combo-list">
@@ -2505,10 +2539,10 @@ function renderFuelTrackerTab() {
 
   // Source label
   const srcLabel = src === 'propane'
-    ? '<span class="ft-src-propane">🔥 Propane</span>'
+    ? `<span class="ft-src-propane">${ic('propane')} Propane</span>`
     : src === 'gas'
-    ? '<span class="ft-src-gas">⛽ Gasoline</span>'
-    : '<span class="ft-src-none">⚠️ No Fuel Source</span>';
+    ? `<span class="ft-src-gas">${ic('gas')} Gasoline</span>`
+    : `<span class="ft-src-none">${ic('alert')} No Fuel Source</span>`;
 
   panel.innerHTML = `
     <!-- Answer-first status strip (mirrors the Calculator verdict) -->
@@ -2526,14 +2560,14 @@ function renderFuelTrackerTab() {
 
       <!-- Status badge -->
       <div class="ft-track-status ${ft.trackingFuel === 'propane' ? 'ft-track-prop' : ft.trackingFuel === 'gas' ? 'ft-track-gas' : 'ft-track-off'}">
-        ${ft.trackingFuel === 'propane' ? '🔥 Tracking: Propane Active'
-          : ft.trackingFuel === 'gas'   ? '⛽ Tracking: Gasoline Active'
-          : '⏸ Not Started'}
+        ${ft.trackingFuel === 'propane' ? `${ic('propane')} Tracking: Propane Active`
+          : ft.trackingFuel === 'gas'   ? `${ic('gas')} Tracking: Gasoline Active`
+          : `${ic('pause')} Not Started`}
       </div>
 
       ${ft.trackingFuel && ft.startMs ? `
         <div class="ft-tracking-active" style="margin-top:12px;">
-          <div class="ft-empty-row"><span>Fuel</span><span>${ft.trackingFuel === 'propane' ? '🔥 Propane' : '⛽ Gasoline'}</span></div>
+          <div class="ft-empty-row"><span>Fuel</span><span>${ft.trackingFuel === 'propane' ? `${ic('propane')} Propane` : `${ic('gas')} Gasoline`}</span></div>
           <div class="ft-empty-row"><span>Started</span><span>${fmtTime(ft.startMs)}</span></div>
           <div class="ft-empty-row"><span>Elapsed</span><span>${fmtElapsed(elapsedMs)}</span></div>
           <div class="ft-empty-row"><span>Load at start</span><span>${ft.startLoadW != null ? fmtW(ft.startLoadW) : '—'}</span></div>
@@ -2544,11 +2578,11 @@ function renderFuelTrackerTab() {
           </p>` : ''}
           ${hasProp && ft.trackingFuel === 'gas' ? `
           <p class="ft-reserve-note" style="margin-top:8px;">
-            ⚠️ Gasoline remains active only while the propane hose is disconnected. Connecting a propane hose while the generator is running will automatically switch it to propane.
+            ${ic('alert')} Gasoline remains active only while the propane hose is disconnected. Connecting a propane hose while the generator is running will automatically switch it to propane.
           </p>` : ''}
           <div class="ft-tracking-btns">
-            <button class="tracker-stop-btn" onclick="ftStopTracking()" style="width:auto;margin-top:0;">⏹ Stop Active Tracker</button>
-            <button class="ft-reset-btn" onclick="ftResetTracking()">↺ Reset Fuel Tracker</button>
+            <button class="tracker-stop-btn" onclick="ftStopTracking()" style="width:auto;margin-top:0;">${ic('stop')} Stop Active Tracker</button>
+            <button class="ft-reset-btn" onclick="ftResetTracking()">${ic('refresh')} Reset Fuel Tracker</button>
           </div>
         </div>
       ` : `
@@ -2557,21 +2591,21 @@ function renderFuelTrackerTab() {
           <div class="ft-start-col">
             <button class="tracker-start-btn tracker-prop-btn tracker-card-start-btn ft-start-full"
               onclick="${!ft.propaneConnected ? `confirmFtPropane()` : `ftStartPropaneTracker()`}">
-              🔥 Start Propane Tracker
+              <span class="tracker-btn-label">${ic('propane')} Start Propane Tracker</span>
               <span class="tracker-btn-sub">Use when the LPG hose is connected — propane is used first</span>
             </button>
-            ${!ft.propaneConnected ? `<p class="ft-start-warn">⚠️ Propane is set to Not Connected. Tapping will set it to Connected and start the propane tracker.</p>` : ''}
+            ${!ft.propaneConnected ? `<p class="ft-start-warn">${ic('alert')} Propane is set to Not Connected. Tapping will set it to Connected and start the propane tracker.</p>` : ''}
           </div>` : ''}
           <div class="ft-start-col">
             <button class="tracker-start-btn tracker-gas-btn tracker-card-start-btn ft-start-full"
               onclick="${hasProp && ft.propaneConnected ? `confirmFtGas()` : `ftStartGasTracker()`}">
-              ⛽ Start Gasoline Tracker
+              <span class="tracker-btn-label">${ic('gas')} Start Gasoline Tracker</span>
               <span class="tracker-btn-sub">${hasProp ? 'Use after the LPG hose is disconnected or when running gas-only' : 'Track gasoline runtime at the current load'}</span>
             </button>
-            ${hasProp && ft.propaneConnected ? `<p class="ft-start-warn">⚠️ Propane is Connected. Tapping will set it to Disconnected and start the gasoline tracker. Propane is used first if LPG is connected.</p>` : ''}
+            ${hasProp && ft.propaneConnected ? `<p class="ft-start-warn">${ic('alert')} Propane is Connected. Tapping will set it to Disconnected and start the gasoline tracker. Propane is used first if LPG is connected.</p>` : ''}
           </div>
         </div>
-        ${ft.startMs ? `<button class="ft-reset-btn" style="margin-top:10px;" onclick="ftResetTracking()">↺ Clear Previous Session</button>` : ''}
+        ${ft.startMs ? `<button class="ft-reset-btn" style="margin-top:10px;" onclick="ftResetTracking()">${ic('refresh')} Clear Previous Session</button>` : ''}
       `}
     </div>
 
@@ -2607,7 +2641,7 @@ function renderFuelTrackerTab() {
         <span class="ft-active-label">Active Fuel Source</span>
         <span class="ft-active-value">${srcLabel}</span>
       </div>
-      ${src === 'none' ? `<div class="ft-no-fuel">⚠️ No fuel source selected. ${hasProp ? 'Connect propane or confirm gasoline is available.' : 'Confirm gasoline is available.'}</div>` : ''}
+      ${src === 'none' ? `<div class="ft-no-fuel">${ic('alert')} No fuel source selected. ${hasProp ? 'Connect propane or confirm gasoline is available.' : 'Confirm gasoline is available.'}</div>` : ''}
     </div>
 
     <!-- Fuel Combination Guidance -->
@@ -2627,7 +2661,7 @@ function renderFuelTrackerTab() {
     <div class="ft-runtime-grid">
       ${hasProp ? `
       <div class="card ft-runtime-card ${src === 'propane' ? 'ft-active-card' : ''}">
-        <h2 class="ft-fuel-heading prop-title">🔥 Propane${src === 'propane' ? ' <span class="ft-active-badge">ACTIVE</span>' : ''}</h2>
+        <h2 class="ft-fuel-heading prop-title">${ic('propane')} Propane${src === 'propane' ? ' <span class="ft-active-badge">ACTIVE</span>' : ''}</h2>
         ${ft.propaneConnected ? `
           <div class="ft-runtime-val ${propHrs >= 10 ? 'ft-green' : propHrs >= 6 ? 'ft-yellow' : 'ft-red'}">${fmt(propHrs)} hrs</div>
           <div class="ft-runtime-sub">${fmt(propLbHr, 2)} lb/hr · ${pTank}</div>
@@ -2635,7 +2669,7 @@ function renderFuelTrackerTab() {
         ` : '<p class="tracker-idle">Not connected.</p>'}
       </div>` : ''}
       <div class="card ft-runtime-card ${src === 'gas' ? 'ft-active-card' : (hasProp ? 'ft-reserve-card' : '')} ${hasProp ? '' : 'ft-start-full'}">
-        <h2 class="ft-fuel-heading gas-title">⛽ Gasoline${src === 'gas' ? ' <span class="ft-active-badge">ACTIVE</span>' : (hasProp && ft.propaneConnected && ft.gasAvailable ? ' <span class="ft-reserve-badge">RESERVE</span>' : '')}</h2>
+        <h2 class="ft-fuel-heading gas-title">${ic('gas')} Gasoline${src === 'gas' ? ' <span class="ft-active-badge">ACTIVE</span>' : (hasProp && ft.propaneConnected && ft.gasAvailable ? ' <span class="ft-reserve-badge">RESERVE</span>' : '')}</h2>
         ${ft.gasAvailable ? (() => {
           if (hasProp && ft.propaneConnected) {
             // Gasoline is reserve — NOT being consumed while propane is connected
@@ -2646,7 +2680,7 @@ function renderFuelTrackerTab() {
               <div class="ft-runtime-sub">Reserve runtime · ${gTank}</div>
               <div class="ft-empty-row"><span>Usable after propane at</span><span>${fmtTime(gasStartMs)}</span></div>
               <div class="ft-empty-row"><span>Est. gas empty at</span><span>${fmtTime(gasCombinedEmptyMs)}</span></div>
-              <p class="ft-reserve-note">⚠️ Not being consumed now. When propane runs out, the generator shuts down — it will NOT auto-switch to gasoline. Disconnect the LPG hose and restart to use gasoline.</p>`;
+              <p class="ft-reserve-note">${ic('alert')} Not being consumed now. When propane runs out, the generator shuts down — it will NOT auto-switch to gasoline. Disconnect the LPG hose and restart to use gasoline.</p>`;
           } else {
             return `
               <div class="ft-runtime-val ${gasHrs >= 10 ? 'ft-green' : gasHrs >= 6 ? 'ft-yellow' : 'ft-red'}">${fmt(gasHrs)} hrs</div>
@@ -2674,7 +2708,7 @@ function renderFuelTrackerTab() {
       const propConf     = ft.propaneConnected ? ftConfidence(propHrs)     : null;
       const combinedConf = (ft.propaneConnected && ft.gasAvailable) ? ftConfidence(combinedHrs) : null;
       const soloConf     = (!ft.propaneConnected && ft.gasAvailable) ? ftConfidence(gasHrs) : null;
-      const mainConf     = propConf || soloConf || { icon:'❌', label:'No Fuel', css:'ft-conf-low', desc:'No fuel source available.' };
+      const mainConf     = propConf || soloConf || { icon: ic('ban'), label:'No Fuel', css:'ft-conf-low', desc:'No fuel source available.' };
       const nowStr = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
       return `
       <div class="card ft-conf-card ${mainConf.css}">
@@ -2804,7 +2838,7 @@ function buildWeatherCard() {
 
   if (w.loading) return `
     <div class="card wi-card">
-      <h2>🌤 Weather Advisory</h2>
+      <h2>Weather Advisory</h2>
       <p class="wi-loading">Fetching tonight's forecast…</p>
     </div>`;
 
@@ -2814,12 +2848,12 @@ function buildWeatherCard() {
     const fetchedStr = w.fetchedMs ? new Date(w.fetchedMs).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
     return `
       <div class="card wi-card">
-        <h2>🌤 Weather Advisory</h2>
+        <h2>Weather Advisory</h2>
         <div class="wi-row"><span class="wi-label">Tonight's Forecast Low</span><span class="wi-val">${w.forecastLow}°F</span></div>
         <div class="wi-row"><span class="wi-label">Weather Impact</span><span class="wi-badge ${impact.css}">${impact.level}</span></div>
         <div class="wi-advisory-row">${impact.advisory}</div>
         ${stale
-          ? `<button class="wi-action-btn" onclick="refreshWeather()">↻ Forecast may be outdated — Refresh</button>`
+          ? `<button class="wi-action-btn" onclick="refreshWeather()">${ic('refresh')} Forecast may be outdated — Refresh</button>`
           : `<p class="wi-fetched">Updated ${fetchedStr} · <button class="wi-link-btn" onclick="refreshWeather()">Refresh</button> · <button class="wi-link-btn" onclick="clearWeatherLocation()">Change location</button></p>`}
         <p class="wi-disclaimer">Weather guidance is informational only and does not modify runtime estimates.</p>
       </div>`;
@@ -2828,10 +2862,10 @@ function buildWeatherCard() {
   // Setup / error state
   return `
     <div class="card wi-card">
-      <h2>🌤 Weather Advisory</h2>
-      ${w.error ? `<p class="wi-error">⚠️ Could not retrieve forecast. Check your connection and try again.</p>` : `<p class="wi-intro">Get tonight's forecast low to see if cold temperatures may affect propane performance.</p>`}
+      <h2>Weather Advisory</h2>
+      ${w.error ? `<p class="wi-error">${ic('alert')} Could not retrieve forecast. Check your connection and try again.</p>` : `<p class="wi-intro">Get tonight's forecast low to see if cold temperatures may affect propane performance.</p>`}
       <div class="wi-setup">
-        <button class="wi-gps-btn" onclick="fetchWeatherGps()">📍 Use Current Location</button>
+        <button class="wi-gps-btn" onclick="fetchWeatherGps()">${ic('pin')} Use Current Location</button>
         <div class="wi-zip-row">
           <input class="wi-zip-input" id="weather-zip-input" type="text" inputmode="numeric" maxlength="5" placeholder="ZIP Code" value="${w.zip || ''}">
           <button class="wi-zip-btn" onclick="fetchWeatherZip()">Get Forecast</button>

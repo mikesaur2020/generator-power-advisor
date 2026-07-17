@@ -15,7 +15,7 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=gpa7">
+  <link rel="stylesheet" href="style.css?v=gpa8">
   <script>
     // Apply saved / system theme before paint to avoid a flash.
     (function () {
@@ -42,7 +42,7 @@
         </div>
       </div>
       <div class="header-btn-group">
-        <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle light or dark theme" title="Toggle theme">◐</button>
+        <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle light or dark theme" title="Toggle theme"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5a8.5 8.5 0 000 17z" fill="currentColor"/></svg></button>
         <button class="header-help-btn" onclick="openHelp()">Help</button>
         <button class="header-manage-btn" onclick="openManagePresets()">Presets</button>
         <button class="header-collapse-btn" onclick="collapseAll()">Collapse</button>
@@ -99,10 +99,10 @@
 
   <!-- Manage Presets Modal -->
   <div id="preset-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeManagePresets()">
-    <div class="modal-box">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-label="Manage presets">
       <div class="modal-header">
         <h2>Manage Presets</h2>
-        <button class="modal-close-btn" onclick="closeManagePresets()">✕</button>
+        <button class="modal-close-btn" aria-label="Close" onclick="closeManagePresets()">✕</button>
       </div>
       <div id="modal-preset-list" class="modal-preset-list"></div>
       <div class="modal-save-section">
@@ -118,10 +118,10 @@
 
   <!-- Generator Picker Modal -->
   <div id="gen-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeGenPicker()">
-    <div class="modal-box">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-label="Choose your generator">
       <div class="modal-header">
         <h2>Choose Your Generator</h2>
-        <button class="modal-close-btn" onclick="closeGenPicker()">✕</button>
+        <button class="modal-close-btn" aria-label="Close" onclick="closeGenPicker()">✕</button>
       </div>
       <div id="gen-modal-body" class="gen-modal-body"></div>
     </div>
@@ -129,10 +129,10 @@
 
   <!-- Help Modal -->
   <div id="help-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeHelp()">
-    <div class="modal-box">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-label="Help">
       <div class="modal-header">
         <h2>Help</h2>
-        <button class="modal-close-btn" onclick="closeHelp()">✕</button>
+        <button class="modal-close-btn" aria-label="Close" onclick="closeHelp()">✕</button>
       </div>
       <dl class="help-list">
         <dt>What is the Live Fuel Tracker?</dt>
@@ -149,7 +149,7 @@
         <dt>Why switch A/C to Fan Only?</dt>
         <dd>A/C Cooling draws ~1,700W. Microwave/toaster/coffee maker/hair dryer each draw 1,000–1,500W. Running both at once exceeds the generator's capacity. Switching A/C to Fan Only (250W) frees up ~1,450W for the high-load appliance.</dd>
         <dt>How is Overnight Confidence calculated?</dt>
-        <dd>Based on estimated runtime at the current load. High ✅ = 10+ hrs, Moderate ⚠️ = 6–10 hrs, Low ❌ = less than 6 hrs. Two values are shown: Propane Only (conservative) and Combined (if you manually switch to gasoline after propane).</dd>
+        <dd>Based on estimated runtime at the current load. High = 10+ hrs, Moderate = 6–10 hrs, Low = less than 6 hrs. Two values are shown: Propane Only (conservative) and Combined (if you manually switch to gasoline after propane).</dd>
         <dt>What is Combined Runtime?</dt>
         <dd>Propane runtime + gasoline reserve runtime. Only achievable if you manually disconnect the LPG hose after propane runs out, then restart the generator.</dd>
         <dt>What does the Calculator tab do?</dt>
@@ -160,6 +160,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=gpa7"></script>
+  <script src="app.js?v=gpa8"></script>
 </body>
 </html>
