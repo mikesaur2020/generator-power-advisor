@@ -1,10 +1,15 @@
-const CACHE_NAME = 'camper-power-v20';
+const CACHE_NAME = 'gpa-v23';
 const ASSETS = [
   './',
   './index.html',
-  './style.css',
-  './app.js',
-  './manifest.json'
+  './style.css?v=gpa3',
+  './app.js?v=gpa3',
+  './manifest.json',
+  './favicon.svg',
+  './favicon-32.png',
+  './apple-touch-icon.png',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', e => {

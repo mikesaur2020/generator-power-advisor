@@ -1,8 +1,17 @@
-# Mike's Camper Power Calculator
+# Generator Power Advisor (GPA)
 
-An installable, offline-capable Progressive Web App (PWA) built specifically for boondocking — generator-only camping with no shore power.
+**Know what you can safely run.** An installable, offline-capable Progressive Web App (PWA)
+that turns a portable generator's real-world capacity — running load, largest startup surge,
+elevation derating, and remaining fuel — into a clear **Safe / Near Capacity / Unsafe** answer,
+the reason behind it, and what to change.
 
-Built for:
+> Formerly *Mike's Camper Power Calculator.* See [PRODUCT.md](PRODUCT.md) for the product
+> vision, roadmap, and design system. **Pick your generator** from a built-in database
+> (dual-fuel and gas-only units) or define a custom one on the Calculator tab — the whole
+> engine recalculates for the selected unit. The appliance/RV profile below is the current
+> default (saved profiles are on the roadmap).
+
+Default profile tuned for:
 
 - **2025 Coachmen Apex Ultra-Lite 28RBS**
 - **WEN DF360iX Dual-Fuel Inverter Generator**

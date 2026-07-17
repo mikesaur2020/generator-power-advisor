@@ -3,26 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#f59e0b">
+  <meta name="theme-color" content="#0c1420" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#eef2f7" media="(prefers-color-scheme: light)">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="CamperPower">
-  <meta name="description" content="WEN DF360iX + Coachmen Apex 28RBS generator load calculator for generator-only camping.">
-  <title>Mike's Camper Power Calculator</title>
+  <meta name="apple-mobile-web-app-title" content="GPA">
+  <meta name="description" content="Generator Power Advisor (GPA) — know what you can safely run on a portable generator. Real-world guidance for load, startup surge, elevation, and fuel.">
+  <title>Generator Power Advisor — Know What You Can Safely Run</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css?v=gpa3">
+  <script>
+    // Apply saved / system theme before paint to avoid a flash.
+    (function () {
+      try {
+        var t = localStorage.getItem('gpaTheme');
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <header>
     <div class="header-main">
-      <div>
-        <h1>⚡ Mike's Camper Power Calculator</h1>
-        <p>WEN DF360iX · Coachmen Apex 28RBS · Generator-only camping</p>
+      <div class="brand-lockup">
+        <div class="brand-mark">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="30" fill="none" stroke="#fff" stroke-width="7" stroke-opacity="0.95"/>
+            <path d="M57 24 L34 53 H51 L44 76 L67 45 H49 L60 24 Z" fill="#fff"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1><span class="brand-full">Generator Power&nbsp;Advisor</span> <span class="gpa-tag">GPA</span></h1>
+          <p>Know what you can safely run</p>
+        </div>
       </div>
       <div class="header-btn-group">
+        <button class="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle light or dark theme" title="Toggle theme">◐</button>
         <button class="header-help-btn" onclick="openHelp()">Help</button>
-        <button class="header-manage-btn" onclick="openManagePresets()">Manage Presets</button>
-        <button class="header-collapse-btn" onclick="collapseAll()">Collapse All</button>
+        <button class="header-manage-btn" onclick="openManagePresets()">Presets</button>
+        <button class="header-collapse-btn" onclick="collapseAll()">Collapse</button>
       </div>
     </div>
   </header>
@@ -91,6 +114,17 @@
     </div>
   </div>
 
+  <!-- Generator Picker Modal -->
+  <div id="gen-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeGenPicker()">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>Choose Your Generator</h2>
+        <button class="modal-close-btn" onclick="closeGenPicker()">✕</button>
+      </div>
+      <div id="gen-modal-body" class="gen-modal-body"></div>
+    </div>
+  </div>
+
   <!-- Help Modal -->
   <div id="help-modal" style="display:none" class="modal-overlay" onclick="if(event.target===this)closeHelp()">
     <div class="modal-box">
@@ -124,6 +158,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=gpa3"></script>
 </body>
 </html>

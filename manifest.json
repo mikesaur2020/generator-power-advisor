@@ -1,12 +1,13 @@
 {
-  "name": "Camper Power Calculator",
-  "short_name": "CamperPower",
-  "description": "WEN DF360iX + Coachmen Apex 28RBS generator load calculator",
+  "name": "Generator Power Advisor",
+  "short_name": "GPA",
+  "description": "Know what you can safely run on a portable generator — real-world load, surge, elevation, and fuel guidance. Works offline.",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#1a2332",
-  "theme_color": "#f59e0b",
+  "background_color": "#0c1420",
+  "theme_color": "#0c1420",
   "orientation": "portrait",
+  "categories": ["utilities", "productivity", "travel"],
   "icons": [
     {
       "src": "icon-192.png",

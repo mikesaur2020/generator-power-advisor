@@ -22,11 +22,140 @@ const APPLIANCES = [
   { id: 'leds',    name: 'Interior LED Lighting', detail: '', running: 75, surge: 0, on: true,  group: 'other' },
 ];
 
-// ── Generator specs ───────────────────────────────────────────────────────────
-const GEN = {
-  gas:  { running: 2900, peak: 3600 },
-  prop: { running: 2600, peak: 3500 },
-};
+// ── Generator database ────────────────────────────────────────────────────────
+// Each generator carries its own ratings + fuel/burn data. The whole engine reads
+// from the *selected* generator (see currentGen), so swapping units re-derives every
+// number. The WEN DF360iX is the default and preserves the app's original values.
+//
+// Watt/runtime figures are typical published specs; real output varies by unit and
+// conditions. Every value is user-editable via a custom generator. Fuel-burn fields:
+//   gas:  { running, peak, tankGal, halfLoadHrs, halfLoadW }
+//   prop: { running, peak, tankLb,  halfLoadHrs, halfLoadW }  (null if gas-only)
+const GENERATORS = [
+  {
+    id: 'wen-df360ix', brand: 'WEN', model: 'DF360iX', short: 'WEN DF360iX',
+    kind: 'Dual-Fuel Inverter', fuels: ['gas', 'propane'], autoFuel: 'wen-priority',
+    gas:  { running: 2900, peak: 3600, tankGal: 1.5, halfLoadHrs: 5,  halfLoadW: 1450 },
+    prop: { running: 2600, peak: 3500, tankLb: 20,  halfLoadHrs: 11, halfLoadW: 1300 },
+    source: 'WEN / Home Depot listing #330761409', builtIn: true,
+  },
+  {
+    id: 'champion-100263', brand: 'Champion', model: '100263', short: 'Champion 3400 DF',
+    kind: 'Dual-Fuel Inverter', fuels: ['gas', 'propane'], autoFuel: null,
+    gas:  { running: 3100, peak: 3400, tankGal: 1.6, halfLoadHrs: 4.5, halfLoadW: 1550 },
+    prop: { running: 2790, peak: 3060, tankLb: 20,  halfLoadHrs: 9,   halfLoadW: 1400 },
+    source: 'Champion published specs', builtIn: true,
+  },
+  {
+    id: 'westinghouse-igen4500df', brand: 'Westinghouse', model: 'iGen4500DF', short: 'Westinghouse iGen4500DF',
+    kind: 'Dual-Fuel Inverter', fuels: ['gas', 'propane'], autoFuel: null,
+    gas:  { running: 3700, peak: 4500, tankGal: 3.4, halfLoadHrs: 10, halfLoadW: 1850 },
+    prop: { running: 3330, peak: 4050, tankLb: 20,  halfLoadHrs: 8,  halfLoadW: 1650 },
+    source: 'Westinghouse published specs', builtIn: true,
+  },
+  {
+    id: 'honda-eu2200i', brand: 'Honda', model: 'EU2200i', short: 'Honda EU2200i',
+    kind: 'Gas Inverter', fuels: ['gas'], autoFuel: null,
+    gas:  { running: 1800, peak: 2200, tankGal: 0.95, halfLoadHrs: 6, halfLoadW: 900 },
+    prop: null, source: 'Honda published specs', builtIn: true,
+  },
+  {
+    id: 'predator-3500', brand: 'Predator', model: '3500', short: 'Predator 3500',
+    kind: 'Gas Inverter', fuels: ['gas'], autoFuel: null,
+    gas:  { running: 3000, peak: 3500, tankGal: 2.6, halfLoadHrs: 5.5, halfLoadW: 1500 },
+    prop: null, source: 'Harbor Freight published specs', builtIn: true,
+  },
+  {
+    id: 'generac-gp2200i', brand: 'Generac', model: 'GP2200i', short: 'Generac GP2200i',
+    kind: 'Gas Inverter', fuels: ['gas'], autoFuel: null,
+    gas:  { running: 1700, peak: 2200, tankGal: 1.2, halfLoadHrs: 6, halfLoadW: 850 },
+    prop: null, source: 'Generac published specs', builtIn: true,
+  },
+];
+
+// The 6 units above are the "Popular" shortlist shown before searching.
+const FEATURED_GEN_IDS = new Set(GENERATORS.map(g => g.id));
+
+// Compact builder for the broader searchable catalog.
+//   g = [running, peak, tankGal, halfLoadHrs]   (half-load watts = running/2)
+//   p = [running, peak, tankLb,  halfLoadHrs] or null (gas-only)
+function mkGen(brand, model, kind, g, p) {
+  const id = (brand + '-' + model).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  return {
+    id, brand, model, short: brand + ' ' + model, kind,
+    fuels: p ? ['gas', 'propane'] : ['gas'], autoFuel: p ? 'wen-priority' : null,
+    gas:  { running: g[0], peak: g[1], tankGal: g[2], halfLoadHrs: g[3], halfLoadW: Math.round(g[0] / 2) },
+    prop: p ? { running: p[0], peak: p[1], tankLb: p[2], halfLoadHrs: p[3], halfLoadW: Math.round(p[0] / 2) } : null,
+    source: 'Typical published specs — verify against your unit', builtIn: true,
+  };
+}
+
+// Broader catalog for "type your make/model" search. Watt ratings are typical
+// published figures; tank/burn are reasonable estimates (runtime only). All values
+// are user-confirmed and editable, so treat these as a fast starting point.
+const GENERATOR_CATALOG = [
+  // Honda (gas inverter)
+  mkGen('Honda', 'EU1000i',      'Gas Inverter', [900, 1000, 0.55, 4],  null),
+  mkGen('Honda', 'EU3000iS',     'Gas Inverter', [2800, 3000, 3.4, 12], null),
+  mkGen('Honda', 'EU3000i Handi','Gas Inverter', [2600, 3000, 1.6, 6],  null),
+  mkGen('Honda', 'EU7000iS',     'Gas Inverter', [5500, 7000, 5.1, 10], null),
+  mkGen('Honda', 'EB2800i',      'Gas Inverter', [2500, 2800, 1.0, 5],  null),
+  // Yamaha (gas inverter)
+  mkGen('Yamaha', 'EF2000iSv2',  'Gas Inverter', [1600, 2000, 1.1, 6],  null),
+  mkGen('Yamaha', 'EF2400iSHC',  'Gas Inverter', [2000, 2400, 1.6, 6],  null),
+  mkGen('Yamaha', 'EF3000iSEB',  'Gas Inverter', [2800, 3000, 3.4, 10], null),
+  // Champion
+  mkGen('Champion', '100519 (2000i)', 'Gas Inverter',  [1700, 2000, 1.1, 6], null),
+  mkGen('Champion', '2500 DF',        'Dual-Fuel Inverter', [1850, 2500, 1.05, 11], [1665, 2200, 20, 20]),
+  mkGen('Champion', '4500 DF',        'Dual-Fuel Inverter', [3500, 4500, 2.9, 14], [3150, 4050, 20, 15]),
+  mkGen('Champion', '76533 (4750 DF)','Dual-Fuel Portable', [3800, 4750, 3.4, 9], [3420, 4275, 20, 10]),
+  mkGen('Champion', '100416 (9200 DF)','Dual-Fuel Portable',[7500, 9200, 6.1, 8], [6750, 8300, 20, 5]),
+  // Westinghouse
+  mkGen('Westinghouse', 'iGen2200',   'Gas Inverter', [1800, 2200, 1.2, 6],  null),
+  mkGen('Westinghouse', 'iGen4500',   'Gas Inverter', [3700, 4500, 3.4, 10], null),
+  mkGen('Westinghouse', 'WGen7500',   'Gas Portable', [7500, 9500, 6.6, 8],  null),
+  mkGen('Westinghouse', 'WGen9500DF', 'Dual-Fuel Portable', [9500, 12500, 6.6, 7], [8500, 11200, 20, 4]),
+  // WEN
+  mkGen('WEN', '56200i',  'Gas Inverter', [1600, 2000, 1.0, 6],   null),
+  mkGen('WEN', '56380i',  'Gas Inverter', [3400, 3800, 2.2, 8.5], null),
+  mkGen('WEN', '56475',   'Gas Portable', [3750, 4750, 4.0, 11],  null),
+  mkGen('WEN', 'DF475iX', 'Dual-Fuel Inverter', [3800, 4750, 2.9, 7], [3500, 4350, 20, 8]),
+  // Predator (Harbor Freight)
+  mkGen('Predator', '2000',        'Gas Inverter', [1600, 2000, 1.0, 6],  null),
+  mkGen('Predator', '5000',        'Gas Inverter', [4000, 5000, 4.0, 9],  null),
+  mkGen('Predator', '9500 DF',     'Dual-Fuel Inverter', [7600, 9500, 4.0, 7], [6825, 8550, 20, 4]),
+  mkGen('Predator', '9000',        'Gas Portable', [7250, 9000, 6.6, 8],  null),
+  // Generac
+  mkGen('Generac', 'iQ3500',  'Gas Inverter', [3000, 3500, 2.6, 9],  null),
+  mkGen('Generac', 'iQ2000',  'Gas Inverter', [1600, 2000, 1.06, 7], null),
+  mkGen('Generac', 'GP3300',  'Gas Portable', [3300, 3750, 3.9, 10], null),
+  mkGen('Generac', 'GP6500',  'Gas Portable', [6500, 8125, 7.9, 10], null),
+  // DuroMax
+  mkGen('DuroMax', 'XP4850EH',  'Dual-Fuel Portable', [3850, 4850, 3.96, 9], [3658, 4593, 20, 7]),
+  mkGen('DuroMax', 'XP5500EH',  'Dual-Fuel Portable', [4500, 5500, 4.0, 8],  [4275, 5225, 20, 6]),
+  mkGen('DuroMax', 'XP12000EH', 'Dual-Fuel Portable', [9500, 12000, 8.3, 8], [9025, 11400, 20, 5]),
+  // Firman
+  mkGen('Firman', 'WH03042',    'Dual-Fuel Portable', [3300, 4550, 1.8, 9], [3000, 4100, 20, 8]),
+  mkGen('Firman', 'W03083',     'Gas Portable', [3300, 4100, 5.0, 12], null),
+  // Briggs & Stratton
+  mkGen('Briggs & Stratton', 'P2200', 'Gas Inverter', [1700, 2200, 1.0, 8],  null),
+  mkGen('Briggs & Stratton', 'P3000', 'Gas Inverter', [2600, 3000, 1.5, 10], null),
+  // A-iPower / Pulsar
+  mkGen('A-iPower', 'SUA2000i', 'Gas Inverter', [1600, 2000, 1.1, 7], null),
+  mkGen('Pulsar', 'G12KBN',     'Dual-Fuel Portable', [9500, 12000, 8.0, 7], [8550, 10800, 20, 4]),
+];
+
+function getAllGenerators() {
+  return GENERATORS.concat(GENERATOR_CATALOG, state.customGenerators || []);
+}
+function currentGen() {
+  const all = getAllGenerators();
+  return all.find(g => g.id === state.generatorId) || all[0];
+}
+function genHasPropane() {
+  const g = currentGen();
+  return !!(g && g.fuels.includes('propane') && g.prop);
+}
 
 // ── Battery charging load by state (only applied when strategy = generator) ───
 const BATTERY_LOAD = { full: 0, partial: 300, heavy: 700 };
@@ -39,13 +168,7 @@ const SHORE_30A = { volts: 120, maxAmps: 30, maxW: 3600, contAmps: 24, contW: 28
 // High-load appliances that warrant switching A/C to Fan Only first.
 const SHORE_HIGHLOAD = ['micro', 'toaster', 'coffee', 'hairdryer', 'iron'];
 
-// ── Fuel burn reference data (from WEN specs / Home Depot listing) ────────────
-// Gas: 5 hrs @ half-load (1450W) on 1.5 gal tank
-// Propane: 11 hrs @ half-load (1300W) on 20 lb tank
-const FUEL = {
-  gas:  { tankGal: 1.5, halfLoadHrs: 5,  halfLoadW: 1450 },
-  prop: { tankLb: 20,  halfLoadHrs: 11, halfLoadW: 1300 },
-};
+// (Fuel-burn reference data now lives per-generator in GENERATORS; see estFuelBurn.)
 
 // ── A/C duty cycle table (outdoor temp rows × setpoint cols) ─────────────────
 const DUTY_TEMPS    = [75, 80, 85, 90, 95, 100];
@@ -65,12 +188,17 @@ const AC_FAN_W = 250;
 // ~3.5% power loss per 1,000 ft above sea level (standard rule of thumb)
 const DERATE_PER_1000FT = 0.035;
 function deratedGen(elevFt) {
+  const g = currentGen();
   const factor = Math.max(0, 1 - (elevFt / 1000) * DERATE_PER_1000FT);
-  return {
+  const out = {
     factor,
-    gas:  { running: Math.round(GEN.gas.running  * factor), peak: Math.round(GEN.gas.peak  * factor) },
-    prop: { running: Math.round(GEN.prop.running * factor), peak: Math.round(GEN.prop.peak * factor) },
+    gas: { running: Math.round(g.gas.running * factor), peak: Math.round(g.gas.peak * factor) },
+    prop: null,
   };
+  if (g.prop) {
+    out.prop = { running: Math.round(g.prop.running * factor), peak: Math.round(g.prop.peak * factor) };
+  }
+  return out;
 }
 
 // ── Built-in presets ──────────────────────────────────────────────────────────
@@ -117,6 +245,8 @@ const state = {
   chargeStrategy: 'solar', // 'solar' | 'generator'
   elevation: 1400,
   elevSource: 'preset', // 'preset' | 'gps' | 'custom'
+  generatorId: 'wen-df360ix',
+  customGenerators: [],
   tests: [],
   userPresets: [],
   hiddenBuiltIns: [],
@@ -155,6 +285,8 @@ function loadState() {
     if (saved.chargeStrategy) state.chargeStrategy = saved.chargeStrategy;
     if (saved.elevation != null) state.elevation = saved.elevation;
     if (saved.elevSource)    state.elevSource = saved.elevSource;
+    if (saved.customGenerators) state.customGenerators = saved.customGenerators;
+    if (saved.generatorId)   state.generatorId = saved.generatorId;
     if (saved.tests)       state.tests = saved.tests;
     if (saved.userPresets)    state.userPresets = saved.userPresets;
     if (saved.hiddenBuiltIns) state.hiddenBuiltIns = saved.hiddenBuiltIns;
@@ -173,6 +305,8 @@ function saveState() {
     chargeStrategy: state.chargeStrategy,
     elevation: state.elevation,
     elevSource: state.elevSource,
+    generatorId: state.generatorId,
+    customGenerators: state.customGenerators,
     tests: state.tests,
     userPresets: state.userPresets,
     hiddenBuiltIns: state.hiddenBuiltIns,
@@ -218,16 +352,25 @@ function fuelStatus(running, peak, genRunning, genPeak) {
 }
 
 function estFuelBurn(loadW) {
-  // Proportional from half-load published figure
-  const gasGalHr = (loadW / FUEL.gas.halfLoadW) * (FUEL.gas.tankGal / FUEL.gas.halfLoadHrs);
-  const gasHrsPerTank = loadW > 0 ? FUEL.gas.tankGal / gasGalHr : Infinity;
+  // Proportional from each fuel's published half-load figure (per selected generator)
+  const g = currentGen();
+  const gs = g.gas;
+  const gasGalHr = (loadW / gs.halfLoadW) * (gs.tankGal / gs.halfLoadHrs);
+  const gasHrsPerTank = loadW > 0 ? gs.tankGal / gasGalHr : Infinity;
   const gasHrsPer5gal = loadW > 0 ? 5 / gasGalHr : Infinity;
 
-  const propLbHr = (loadW / FUEL.prop.halfLoadW) * (FUEL.prop.tankLb / FUEL.prop.halfLoadHrs);
-  const propHrsPer20lb = loadW > 0 ? FUEL.prop.tankLb / propLbHr : Infinity;
-  const propHrsPer40lb = propHrsPer20lb * 2;
+  let propLbHr = 0, propHrsPer20lb = Infinity, propHrsPer40lb = Infinity;
+  if (g.prop) {
+    const ps = g.prop;
+    propLbHr = (loadW / ps.halfLoadW) * (ps.tankLb / ps.halfLoadHrs);
+    propHrsPer20lb = loadW > 0 ? ps.tankLb / propLbHr : Infinity;
+    propHrsPer40lb = propHrsPer20lb * 2;
+  }
 
-  return { gasGalHr, gasHrsPerTank, gasHrsPer5gal, propLbHr, propHrsPer20lb, propHrsPer40lb };
+  return {
+    gasGalHr, gasHrsPerTank, gasHrsPer5gal, propLbHr, propHrsPer20lb, propHrsPer40lb,
+    gasTankGal: gs.tankGal, propTankLb: g.prop ? g.prop.tankLb : null,
+  };
 }
 
 // ── Formatting ────────────────────────────────────────────────────────────────
@@ -258,9 +401,15 @@ function fmtHead(w) {
 // ── Render: Calculator ────────────────────────────────────────────────────────
 function renderCalculator() {
   const { running, maxSurge, peak, battLoad } = calcLoads();
+  const g = currentGen();
+  const hasProp = genHasPropane();
   const derated = deratedGen(state.elevation);
   const gas  = fuelStatus(running, peak, derated.gas.running,  derated.gas.peak);
-  const prop = fuelStatus(running, peak, derated.prop.running, derated.prop.peak);
+  const prop = hasProp ? fuelStatus(running, peak, derated.prop.running, derated.prop.peak) : null;
+
+  // Generator identity line (in the load summary card)
+  const genLine = document.getElementById('calc-gen-line');
+  if (genLine) genLine.textContent = `${g.short} · ${g.kind}`;
 
   // Results
   document.getElementById('res-running').textContent = fmtW(running);
@@ -289,8 +438,12 @@ function renderCalculator() {
   setText('derate-pct',      deratePct.toFixed(1) + '%');
   setText('derate-gas-run',  derated.gas.running.toLocaleString() + ' W');
   setText('derate-gas-peak', derated.gas.peak.toLocaleString() + ' W');
-  setText('derate-prop-run', derated.prop.running.toLocaleString() + ' W');
-  setText('derate-prop-peak',derated.prop.peak.toLocaleString() + ' W');
+  const deratePropWrap = document.getElementById('derate-prop-wrap');
+  if (deratePropWrap) deratePropWrap.style.display = hasProp ? '' : 'none';
+  if (hasProp) {
+    setText('derate-prop-run', derated.prop.running.toLocaleString() + ' W');
+    setText('derate-prop-peak',derated.prop.peak.toLocaleString() + ' W');
+  }
 
   // Show/hide refresh GPS button
   const refreshBtn = document.getElementById('gps-refresh-btn');
@@ -326,34 +479,38 @@ function renderCalculator() {
   document.getElementById('gas-peak-head').innerHTML = fmtHead(gas.peakHead);
   document.getElementById('gas-capacity').textContent = `${derated.gas.running.toLocaleString()}W / ${derated.gas.peak.toLocaleString()}W peak`;
 
-  // Propane status
-  const propBadge = document.getElementById('prop-badge');
-  propBadge.textContent = prop.label;
-  propBadge.className = 'status-badge status-' + prop.status;
-  document.getElementById('prop-run-head').innerHTML = fmtHead(prop.runHead);
-  document.getElementById('prop-peak-head').innerHTML = fmtHead(prop.peakHead);
-  document.getElementById('prop-capacity').textContent = `${derated.prop.running.toLocaleString()}W / ${derated.prop.peak.toLocaleString()}W peak`;
+  // Propane status (only when the selected generator supports propane)
+  const propBlock = document.getElementById('fuelblock-prop');
+  if (propBlock) propBlock.style.display = hasProp ? '' : 'none';
+  if (hasProp) {
+    const propBadge = document.getElementById('prop-badge');
+    propBadge.textContent = prop.label;
+    propBadge.className = 'status-badge status-' + prop.status;
+    document.getElementById('prop-run-head').innerHTML = fmtHead(prop.runHead);
+    document.getElementById('prop-peak-head').innerHTML = fmtHead(prop.peakHead);
+    document.getElementById('prop-capacity').textContent = `${derated.prop.running.toLocaleString()}W / ${derated.prop.peak.toLocaleString()}W peak`;
+    document.getElementById('prop-run-pct').textContent = Math.round(prop.runPct * 100) + '% of running capacity';
+  }
 
-  // Running % display
+  // Running % display (gas)
   document.getElementById('gas-run-pct').textContent  = Math.round(gas.runPct * 100) + '% of running capacity';
-  document.getElementById('prop-run-pct').textContent = Math.round(prop.runPct * 100) + '% of running capacity';
 
-  // Load status banner
+  // Load status banner (worst of available fuels)
   const banner = document.getElementById('load-banner');
   if (banner) {
-    const worstStatus = (gas.status === 'over' || prop.status === 'over') ? 'over'
-                      : (gas.status === 'near' || prop.status === 'near') ? 'near' : 'good';
+    const statuses = hasProp ? [gas.status, prop.status] : [gas.status];
+    const worstStatus = statuses.includes('over') ? 'over' : statuses.includes('near') ? 'near' : 'good';
     if (worstStatus === 'over') {
       const msgs = [];
       if (gas.status  === 'over') msgs.push(`⛽ Gas: ${gas.label}`);
-      if (prop.status === 'over') msgs.push(`🔵 Propane: ${prop.label}`);
+      if (hasProp && prop.status === 'over') msgs.push(`🔵 Propane: ${prop.label}`);
       banner.textContent = msgs.join('  ·  ');
       banner.className = 'load-banner load-banner-over';
       banner.style.display = 'block';
     } else if (worstStatus === 'near') {
       const msgs = [];
       if (gas.status  === 'near') msgs.push('⛽ Gas: Near Limit');
-      if (prop.status === 'near') msgs.push('🔵 Propane: Near Limit');
+      if (hasProp && prop.status === 'near') msgs.push('🔵 Propane: Near Limit');
       banner.textContent = msgs.join('  ·  ');
       banner.className = 'load-banner load-banner-near';
       banner.style.display = 'block';
@@ -378,6 +535,343 @@ function renderCalculator() {
   if (hlWarn) hlWarn.style.display = (highLoadOn && state.appliances['ac_cool']) ? 'block' : 'none';
   const acWarn = document.getElementById('ac-warn');
   if (acWarn) acWarn.style.display = 'none';
+
+  // Verdict-first summary (answer, not arithmetic)
+  populateVerdict(running, peak, maxSurge, derated, gas, prop);
+}
+
+// ── Verdict: plain-language "can I safely run this?" ──────────────────────────
+// The headline verdict is based on the *limiting* fuel. On dual-fuel units that is
+// propane (lower ratings, the documented default active fuel) and we surface
+// gasoline's extra headroom as guidance. On gas-only units it is gasoline.
+function populateVerdict(running, peak, maxSurge, derated, gas, prop) {
+  const card = document.getElementById('verdict-card');
+  if (!card) return;
+  const hasProp = !!prop;
+  const lim = hasProp ? prop : gas;         // limiting fuel status
+  const limDer = hasProp ? derated.prop : derated.gas;
+  const limName = hasProp ? 'propane' : 'gasoline';
+  const cls = 'v-' + lim.status;            // v-good | v-near | v-over
+  card.className = 'card verdict-card ' + cls;
+
+  const pill = document.getElementById('verdict-pill');
+  pill.textContent = lim.status === 'good' ? '✅ Safe'
+                   : lim.status === 'near' ? '⚠️ Near Capacity' : '❌ Unsafe';
+  pill.className = 'verdict-pill ' + cls;
+
+  document.getElementById('verdict-fuel').innerHTML =
+    `on ${limName}<br>${limDer.running.toLocaleString()}W limit`;
+
+  document.getElementById('verdict-headline').textContent =
+    lim.status === 'good' ? 'You can safely run this.'
+    : lim.status === 'near' ? "You're close to the limit."
+    : 'This exceeds your generator.';
+
+  document.getElementById('verdict-why').innerHTML =
+    verdictWhy(lim, gas, prop, running, peak, derated, limName, limDer);
+
+  document.getElementById('vm-load').textContent = running.toLocaleString() + 'W';
+
+  const remainEl = document.getElementById('vm-remain');
+  remainEl.textContent = (lim.runHead < 0 ? '−' : '') + Math.abs(lim.runHead).toLocaleString() + 'W';
+  remainEl.className = 'vm-val ' + cls;
+
+  const marginEl = document.getElementById('vm-margin');
+  marginEl.textContent = Math.round((1 - lim.runPct) * 100) + '%';
+  marginEl.className = 'vm-val ' + cls;
+
+  const surgeChip = document.getElementById('vchip-surge');
+  const surgeOk = lim.peakHead >= 0;
+  surgeChip.className = 'vchip ' + (surgeOk ? 'v-good' : 'v-over');
+  surgeChip.innerHTML = `Startup surge <b>${surgeOk ? 'OK' : 'over'}</b> · peak ${peak.toLocaleString()}W`;
+
+  const derChip = document.getElementById('vchip-derate');
+  const deratePct = Math.round((1 - derated.factor) * 100);
+  derChip.className = 'vchip';
+  derChip.innerHTML = state.elevation > 0
+    ? `Elevation <b>${state.elevation.toLocaleString()} ft</b> · −${deratePct}%`
+    : `Elevation <b>sea level</b> · no derate`;
+}
+
+function verdictWhy(lim, gas, prop, running, peak, derated, limName, limDer) {
+  const highOn = APPLIANCES.filter(a => a.group === 'highload' && state.appliances[a.id]).map(a => a.name);
+  const acOn = state.appliances['ac_cool'];
+  const pct = Math.round(lim.runPct * 100);
+  const hasProp = !!prop;
+
+  if (lim.status === 'good') {
+    return `Comfortable margin — running load is <strong>${pct}%</strong> of ${limName}'s continuous capacity, and the startup surge fits within peak.`;
+  }
+  if (lim.status === 'near') {
+    if (highOn.length && acOn) {
+      return `Running <strong>${highOn.join(' + ')}</strong> alongside <strong>A/C Cooling</strong> leaves little headroom on ${limName}. <span class="vw-tip">Switch A/C to Fan Only to free ~1,450W.</span>`;
+    }
+    return `Running load is <strong>${pct}%</strong> of ${limName}'s continuous capacity — close to the limit. Avoid adding another large appliance.`;
+  }
+  // over
+  let msg;
+  if (lim.peakHead < 0 && lim.runHead >= 0) {
+    msg = `The <strong>startup surge</strong> (peak ${peak.toLocaleString()}W) exceeds ${limName}'s ${limDer.peak.toLocaleString()}W peak — the generator may stall when the largest load starts.`;
+  } else {
+    msg = `Running load <strong>${running.toLocaleString()}W</strong> is above ${limName}'s <strong>${limDer.running.toLocaleString()}W</strong> continuous limit.`;
+  }
+  if (highOn.length && acOn) {
+    msg += ` <span class="vw-tip">Switch A/C to Fan Only</span> before running ${highOn.join(' / ')}.`;
+  } else if (highOn.length) {
+    msg += ` Turn off <strong>${highOn.join(' / ')}</strong>.`;
+  }
+  // On dual-fuel units, surface gasoline's extra headroom when it would help.
+  if (hasProp && gas.runHead >= 0) {
+    msg += ` <span class="vw-tip">Gasoline would handle this</span> (+${gas.runHead.toLocaleString()}W headroom) — switch fuels or reduce load.`;
+  }
+  return msg;
+}
+
+// ── Generator selection ───────────────────────────────────────────────────────
+function fuelBadgesHTML(g) {
+  return g.fuels.map(f => f === 'gas'
+    ? '<span class="gen-fuel-badge gen-fuel-gas">⛽ Gas</span>'
+    : '<span class="gen-fuel-badge gen-fuel-prop">🔵 Propane</span>').join('');
+}
+
+function buildGeneratorCard() {
+  const g = currentGen();
+  const ratings = `⛽ ${g.gas.running.toLocaleString()}W · ${g.gas.peak.toLocaleString()}W peak`
+    + (g.prop ? ` &nbsp;·&nbsp; 🔵 ${g.prop.running.toLocaleString()}W · ${g.prop.peak.toLocaleString()}W peak` : '');
+  return `
+    <div class="card gen-card">
+      <div class="gen-card-top">
+        <div class="gen-card-info">
+          <div class="gen-card-label">Your Generator</div>
+          <div class="gen-card-name">${escHtml(g.short)}${g.builtIn ? '' : ' <span class="gen-custom-tag">custom</span>'}</div>
+          <div class="gen-card-kind">${escHtml(g.kind)}</div>
+        </div>
+        <button class="gen-change-btn" onclick="openGenPicker()">Change</button>
+      </div>
+      <div class="gen-card-badges">${fuelBadgesHTML(g)}</div>
+      <div class="gen-card-ratings">${ratings}</div>
+    </div>`;
+}
+
+function openGenPicker() {
+  renderGenModal();
+  document.getElementById('gen-modal').style.display = 'flex';
+}
+function closeGenPicker() {
+  document.getElementById('gen-modal').style.display = 'none';
+}
+
+function genRowHTML(g) {
+  const active = g.id === state.generatorId;
+  const sub = `${escHtml(g.kind)} · ⛽ ${g.gas.running.toLocaleString()}W`
+    + (g.prop ? ` · 🔵 ${g.prop.running.toLocaleString()}W` : '');
+  return `
+    <div class="gen-row ${active ? 'gen-row-active' : ''}" onclick="confirmGenSpecs('${g.id}')">
+      <div class="gen-row-main">
+        <div class="gen-row-name">${escHtml(g.short)}${active ? ' <span class="gen-row-check">✓</span>' : ''}${g.builtIn ? '' : ' <span class="gen-custom-tag">custom</span>'}</div>
+        <div class="gen-row-sub">${sub}</div>
+      </div>
+      <span class="gen-row-arrow">›</span>
+    </div>`;
+}
+
+function renderGenModal() {
+  const body = document.getElementById('gen-modal-body');
+  if (!body) return;
+  body.innerHTML = `
+    <div class="gen-search-wrap">
+      <input type="text" id="gen-search" class="gen-search" autocomplete="off"
+        placeholder="🔍 Search generators — brand or model…" oninput="filterGenList(this.value)">
+    </div>
+    <div id="gen-list"></div>
+    <button class="gen-add-btn" onclick="openCustomGenForm()">＋ Add a generator manually</button>
+    <div id="gen-custom-form" style="display:none"></div>
+    <p class="gen-modal-note">Catalog specs are typical published figures — always confirm and verify against your unit's manual before relying on them.</p>`;
+  filterGenList('');
+}
+
+function filterGenList(query) {
+  const el = document.getElementById('gen-list');
+  if (!el) return;
+  const q = (query || '').trim().toLowerCase();
+  const all = getAllGenerators();
+  const builtInCount = all.filter(g => g.builtIn).length;
+
+  if (!q) {
+    const featured = all.filter(g => FEATURED_GEN_IDS.has(g.id));
+    const customs  = all.filter(g => !g.builtIn);
+    el.innerHTML =
+      `<div class="gen-group-label">Popular</div>` + featured.map(genRowHTML).join('')
+      + (customs.length ? `<div class="gen-group-label">Your custom generators</div>` + customs.map(genRowHTML).join('') : '')
+      + `<p class="gen-search-hint">Type a brand or model to search all ${builtInCount} built-in units.</p>`;
+    return;
+  }
+  const matches = all
+    .filter(g => `${g.short} ${g.brand} ${g.model} ${g.kind}`.toLowerCase().includes(q))
+    .slice(0, 40);
+  el.innerHTML = matches.length
+    ? matches.map(genRowHTML).join('')
+    : `<p class="gen-search-hint">No matches for “${escHtml(query)}”. Try another term, or add it manually below.</p>`;
+}
+
+// Show a unit's full specs and require the user to confirm before using it.
+function confirmGenSpecs(id) {
+  const g = getAllGenerators().find(x => x.id === id);
+  if (!g) return;
+  const body = document.getElementById('gen-modal-body');
+  const active = g.id === state.generatorId;
+  body.innerHTML = `
+    <button class="gen-back-btn" onclick="renderGenModal()">‹ Back to list</button>
+    <div class="gen-confirm">
+      <div class="gen-confirm-name">${escHtml(g.short)}${g.builtIn ? '' : ' <span class="gen-custom-tag">custom</span>'}</div>
+      <div class="gen-confirm-kind">${escHtml(g.kind)}</div>
+      <div class="gen-card-badges" style="margin:12px 0 14px;">${fuelBadgesHTML(g)}</div>
+      <div class="gen-spec-table">
+        <div class="gen-spec-row"><span>⛽ Gasoline — running</span><b>${g.gas.running.toLocaleString()} W</b></div>
+        <div class="gen-spec-row"><span>⛽ Gasoline — peak / surge</span><b>${g.gas.peak.toLocaleString()} W</b></div>
+        <div class="gen-spec-row"><span>⛽ Gas tank</span><b>${g.gas.tankGal} gal</b></div>
+        ${g.prop ? `
+        <div class="gen-spec-row"><span>🔵 Propane — running</span><b>${g.prop.running.toLocaleString()} W</b></div>
+        <div class="gen-spec-row"><span>🔵 Propane — peak / surge</span><b>${g.prop.peak.toLocaleString()} W</b></div>
+        <div class="gen-spec-row"><span>🔵 Propane tank</span><b>${g.prop.tankLb} lb</b></div>` : ''}
+      </div>
+      <p class="gen-confirm-note">${escHtml(g.source || 'Typical published specs')}. Confirm these match your unit — you can adjust them if they differ.</p>
+      <div class="gen-confirm-btns">
+        <button class="gen-form-save" onclick="selectGenerator('${g.id}')">${active ? '✓ Keep Using This' : 'Confirm & Use'}</button>
+        <button class="gen-form-cancel" onclick="cloneGenToCustom('${g.id}')">Adjust values…</button>
+      </div>
+      ${!g.builtIn ? `<button class="gen-row-del gen-confirm-del" onclick="deleteCustomGen('${g.id}')">Delete this custom generator</button>` : ''}
+    </div>`;
+}
+
+// Prefill the manual form from an existing unit, saving as a NEW custom generator.
+function cloneGenToCustom(id) {
+  const src = getAllGenerators().find(x => x.id === id);
+  renderGenModal();
+  openCustomGenForm(null, src);
+  const form = document.getElementById('gen-custom-form');
+  if (form) form.scrollIntoView({ block: 'nearest' });
+}
+
+function selectGenerator(id) {
+  state.generatorId = id;
+  // Gas-only unit → propane cannot be connected.
+  if (!genHasPropane()) {
+    state.ft.propaneConnected = false;
+    if (state.ft.trackingFuel === 'propane') state.ft.trackingFuel = null;
+  }
+  saveState();
+  closeGenPicker();
+  refreshGeneratorDependentUI();
+}
+
+function openCustomGenForm(id, sourceGen) {
+  const editing = id ? getAllGenerators().find(g => g.id === id) : null;
+  const base = editing || sourceGen || null;   // prefill source (edit or clone)
+  const form = document.getElementById('gen-custom-form');
+  if (!form) return;
+  const gp = base && base.prop ? base.prop : null;
+  const title = editing ? 'Edit Custom Generator'
+    : sourceGen ? `New — based on ${escHtml(sourceGen.short)}`
+    : 'New Custom Generator';
+  form.style.display = 'block';
+  form.innerHTML = `
+    <div class="gen-form">
+      <p class="gen-form-title">${title}</p>
+      <label class="gen-form-row"><span>Name</span>
+        <input type="text" id="gen-f-name" maxlength="34" value="${base ? escHtml(base.short) : ''}" placeholder="e.g. My Champion 4500"></label>
+      <label class="gen-form-row"><span>Gas running (W)</span>
+        <input type="number" id="gen-f-grun" min="200" max="15000" step="50" value="${base ? base.gas.running : ''}" placeholder="3000"></label>
+      <label class="gen-form-row"><span>Gas peak / surge (W)</span>
+        <input type="number" id="gen-f-gpeak" min="200" max="18000" step="50" value="${base ? base.gas.peak : ''}" placeholder="3500"></label>
+      <label class="gen-form-row"><span>Gas tank (gal)</span>
+        <input type="number" id="gen-f-gtank" min="0.2" max="20" step="0.1" value="${base ? base.gas.tankGal : ''}" placeholder="2.6"></label>
+      <label class="gen-form-check"><input type="checkbox" id="gen-f-haspropane" ${gp ? 'checked' : ''} onchange="document.getElementById('gen-prop-fields').style.display=this.checked?'block':'none'"> Supports propane (dual-fuel)</label>
+      <div id="gen-prop-fields" style="display:${gp ? 'block' : 'none'}">
+        <label class="gen-form-row"><span>Propane running (W)</span>
+          <input type="number" id="gen-f-prun" min="200" max="15000" step="50" value="${gp ? gp.running : ''}" placeholder="2700"></label>
+        <label class="gen-form-row"><span>Propane peak / surge (W)</span>
+          <input type="number" id="gen-f-ppeak" min="200" max="18000" step="50" value="${gp ? gp.peak : ''}" placeholder="3100"></label>
+        <label class="gen-form-row"><span>Propane tank (lb)</span>
+          <input type="number" id="gen-f-ptank" min="1" max="100" step="1" value="${gp ? gp.tankLb : 20}" placeholder="20"></label>
+      </div>
+      <div class="gen-form-btns">
+        <button class="gen-form-save" onclick="saveCustomGen(${editing ? `'${editing.id}'` : 'null'})">Save & Select</button>
+        <button class="gen-form-cancel" onclick="document.getElementById('gen-custom-form').style.display='none'">Cancel</button>
+      </div>
+      <p class="gen-form-err" id="gen-form-err" style="display:none"></p>
+    </div>`;
+}
+
+function saveCustomGen(editId) {
+  const num = (id) => parseFloat(document.getElementById(id).value);
+  const name = (document.getElementById('gen-f-name').value || '').trim();
+  const grun = num('gen-f-grun'), gpeak = num('gen-f-gpeak'), gtank = num('gen-f-gtank');
+  const hasProp = document.getElementById('gen-f-haspropane').checked;
+  const err = document.getElementById('gen-form-err');
+  const fail = (m) => { err.textContent = m; err.style.display = 'block'; };
+
+  if (!name) return fail('Please enter a name.');
+  if (!(grun > 0) || !(gpeak > 0) || !(gtank > 0)) return fail('Enter valid gas running, peak, and tank values.');
+  if (gpeak < grun) return fail('Gas peak should be ≥ gas running.');
+
+  const gen = {
+    id: editId || 'custom-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.abs(hashStr(name + grun + gpeak)),
+    brand: 'Custom', model: name, short: name,
+    kind: hasProp ? 'Dual-Fuel (custom)' : 'Gas (custom)',
+    fuels: hasProp ? ['gas', 'propane'] : ['gas'], autoFuel: hasProp ? 'wen-priority' : null,
+    gas: { running: grun, peak: gpeak, tankGal: gtank, halfLoadHrs: 6, halfLoadW: Math.round(grun / 2) },
+    prop: null, source: 'user-defined', builtIn: false,
+  };
+  if (hasProp) {
+    const prun = num('gen-f-prun'), ppeak = num('gen-f-ppeak'), ptank = num('gen-f-ptank');
+    if (!(prun > 0) || !(ppeak > 0) || !(ptank > 0)) return fail('Enter valid propane running, peak, and tank values.');
+    if (ppeak < prun) return fail('Propane peak should be ≥ propane running.');
+    gen.prop = { running: prun, peak: ppeak, tankLb: ptank, halfLoadHrs: 10, halfLoadW: Math.round(prun / 2) };
+  }
+
+  state.customGenerators = (state.customGenerators || []).filter(x => x.id !== gen.id);
+  state.customGenerators.push(gen);
+  state.generatorId = gen.id;
+  if (!hasProp) { state.ft.propaneConnected = false; if (state.ft.trackingFuel === 'propane') state.ft.trackingFuel = null; }
+  saveState();
+  closeGenPicker();
+  refreshGeneratorDependentUI();
+}
+
+function deleteCustomGen(id) {
+  state.customGenerators = (state.customGenerators || []).filter(g => g.id !== id);
+  if (state.generatorId === id) state.generatorId = 'wen-df360ix';
+  saveState();
+  renderGenModal();
+  refreshGeneratorDependentUI();
+}
+
+function hashStr(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) { h = (h << 5) - h + s.charCodeAt(i); h |= 0; }
+  return h;
+}
+
+// Refresh every panel whose content depends on the selected generator.
+function refreshGeneratorDependentUI() {
+  rebuildCalculator();
+  const about = document.getElementById('panel-about'); if (about) about.innerHTML = buildAboutHTML();
+  const fuel  = document.getElementById('panel-fuel');  if (fuel)  fuel.innerHTML  = buildFuelHTML();
+  renderFuelTrackerTab();
+}
+
+// Rebuild the Calculator tab HTML (used after the selected generator changes).
+function rebuildCalculator() {
+  const panel = document.getElementById('panel-calc');
+  if (!panel) return;
+  panel.innerHTML = buildCalculatorHTML();
+  document.querySelectorAll('.battery-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', ['full', 'partial', 'heavy'][i] === state.battery);
+  });
+  syncPresetButtons(state.elevation);
+  renderCalculator();
+  renderPresetButtons();
 }
 
 // ── Render: Appliance groups ──────────────────────────────────────────────────
@@ -408,6 +902,27 @@ function buildCalculatorHTML() {
   const other    = APPLIANCES.filter(a => a.group === 'other');
 
   return `
+    ${buildGeneratorCard()}
+
+    <!-- Verdict-first summary -->
+    <div class="card verdict-card" id="verdict-card">
+      <div class="verdict-top">
+        <span class="verdict-pill" id="verdict-pill">—</span>
+        <span class="verdict-fuel" id="verdict-fuel"></span>
+      </div>
+      <div class="verdict-headline" id="verdict-headline">—</div>
+      <div class="verdict-why" id="verdict-why"></div>
+      <div class="verdict-metrics">
+        <div class="vm"><div class="vm-label">Generator Load</div><div class="vm-val" id="vm-load">—</div></div>
+        <div class="vm"><div class="vm-label">Capacity Remaining</div><div class="vm-val" id="vm-remain">—</div></div>
+        <div class="vm"><div class="vm-label">Safety Margin</div><div class="vm-val" id="vm-margin">—</div></div>
+      </div>
+      <div class="verdict-chips">
+        <span class="vchip" id="vchip-surge">—</span>
+        <span class="vchip" id="vchip-derate">—</span>
+      </div>
+    </div>
+
     <div class="strategy-note">
       <div class="strategy-header">
         <h2>Recommended Operating Strategy</h2>
@@ -468,8 +983,10 @@ function buildCalculatorHTML() {
           <div class="derate-divider"></div>
           <div class="derate-row"><span>⛽ Gas Running Capacity</span><span id="derate-gas-run">—</span></div>
           <div class="derate-row"><span>⛽ Gas Peak Capacity</span><span id="derate-gas-peak">—</span></div>
-          <div class="derate-row"><span>🔵 Propane Running Capacity</span><span id="derate-prop-run">—</span></div>
-          <div class="derate-row"><span>🔵 Propane Peak Capacity</span><span id="derate-prop-peak">—</span></div>
+          <div id="derate-prop-wrap">
+            <div class="derate-row"><span>🔵 Propane Running Capacity</span><span id="derate-prop-run">—</span></div>
+            <div class="derate-row"><span>🔵 Propane Peak Capacity</span><span id="derate-prop-peak">—</span></div>
+          </div>
           <p class="derate-note">Derated values are used throughout the app for status and headroom calculations.</p>
         </div>
 
@@ -482,6 +999,7 @@ function buildCalculatorHTML() {
       <h2 class="collapsible-heading" onclick="toggleSection('summary-detail', this)">
         Generator Load Summary <span class="collapse-icon">▸</span>
       </h2>
+      <p class="calc-gen-line" id="calc-gen-line" style="font-size:0.72rem;color:var(--text-muted);margin:-4px 0 10px;"></p>
 
       <div id="load-banner" style="display:none" class="load-banner"></div>
 
@@ -516,7 +1034,7 @@ function buildCalculatorHTML() {
           <div class="headroom-row"><span>Running headroom</span><span id="gas-run-head">—</span></div>
           <div class="headroom-row"><span>Peak headroom</span><span id="gas-peak-head">—</span></div>
         </div>
-        <div class="fuel-block">
+        <div class="fuel-block" id="fuelblock-prop">
           <h3 class="propane">🔵 Propane</h3>
           <div id="prop-badge" class="status-badge">—</div>
           <div class="result-sub" id="prop-run-pct"></div>
@@ -841,23 +1359,32 @@ function escHtml(s) {
 
 // ── Fuel tracker helpers ──────────────────────────────────────────────────────
 function buildFuelHTML() {
+  const g = currentGen();
+  const hasProp = !!g.prop;
+  const gasTank = g.gas.tankGal;
+  const propTank = hasProp ? g.prop.tankLb : null;
+
   const rows = [0.25, 0.50, 0.75, 1.00].map(pct => {
-    const gW = Math.round(GEN.gas.running  * pct);
-    const pW = Math.round(GEN.prop.running * pct);
-    const { gasHrsPerTank, gasHrsPer5gal, propHrsPer20lb, propHrsPer40lb } = estFuelBurn(gW);
-    const { propHrsPer20lb: pProp20, propHrsPer40lb: pProp40 } = estFuelBurn(pW);
+    const gW = Math.round(g.gas.running * pct);
+    const { gasHrsPerTank, gasHrsPer5gal } = estFuelBurn(gW);
     const label = pct === 0.25 ? 'Light (25%)' : pct === 0.5 ? '½ Load (50%) — spec basis' : pct === 0.75 ? 'Heavy (75%)' : 'Full (100%)';
     const isHalf = pct === 0.5;
+    let propCells = '';
+    if (hasProp) {
+      const pW = Math.round(g.prop.running * pct);
+      const { propHrsPer20lb: pProp20, propHrsPer40lb: pProp40 } = estFuelBurn(pW);
+      propCells = `<td>${pW}W</td><td>${fmt(pProp20)} hrs</td><td>${fmt(pProp40)} hrs</td>`;
+    }
     return `<tr${isHalf ? ' class="highlight-row"' : ''}>
       <td>${label}</td><td>${gW}W</td><td>${fmt(gasHrsPerTank)} hrs</td><td>${fmt(gasHrsPer5gal)} hrs</td>
-      <td>${pW}W</td><td>${fmt(pProp20)} hrs</td><td>${fmt(pProp40)} hrs</td>
+      ${propCells}
     </tr>`;
   });
 
   return `
     <!-- Reference table -->
     <div class="card">
-      <h2>Runtime Reference Table</h2>
+      <h2>Runtime Reference — ${escHtml(g.short)}</h2>
       <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px;">
         Planning table for estimating runtime at different load levels — useful before you know what appliance combination you'll run.
       </p>
@@ -867,18 +1394,18 @@ function buildFuelHTML() {
             <tr>
               <th rowspan="2">Load Level</th>
               <th colspan="3" class="gas-col">⛽ Gasoline</th>
-              <th colspan="3" class="prop-col">🔵 Propane</th>
+              ${hasProp ? '<th colspan="3" class="prop-col">🔵 Propane</th>' : ''}
             </tr>
             <tr>
-              <th class="gas-col">Watts</th><th class="gas-col">Hrs/1.5 gal</th><th class="gas-col">Hrs/5 gal</th>
-              <th class="prop-col">Watts</th><th class="prop-col">Hrs/20 lb</th><th class="prop-col">Hrs/2×20 lb</th>
+              <th class="gas-col">Watts</th><th class="gas-col">Hrs/${fmt(gasTank, gasTank % 1 ? 1 : 0)} gal</th><th class="gas-col">Hrs/5 gal</th>
+              ${hasProp ? `<th class="prop-col">Watts</th><th class="prop-col">Hrs/${propTank} lb</th><th class="prop-col">Hrs/2×${propTank} lb</th>` : ''}
             </tr>
           </thead>
           <tbody>${rows.join('')}</tbody>
         </table>
       </div>
       <p style="font-size:0.68rem;color:var(--text-muted);margin-top:8px;">
-        Highlighted row = published spec basis (WEN / Home Depot). All other rows are proportional estimates.
+        Highlighted row = published half-load spec basis. All other rows are proportional estimates.
       </p>
     </div>
 
@@ -892,8 +1419,7 @@ function buildFuelHTML() {
         <li><span>⛽</span><span>Tank fill level, fuel age, and generator condition all affect real runtime.</span></li>
       </ul>
       <p style="font-size:0.68rem;color:var(--text-muted);margin-top:8px;">
-        Sources: WEN DF360iX product page · Home Depot listing #330761409<br>
-        ~5 hrs gasoline at half-load (1.5 gal) · ~11 hrs propane at half-load (20 lb)
+        Figures for <strong>${escHtml(g.short)}</strong> — ${escHtml(g.source || 'typical published specs')}. Values are editable via a custom generator.
       </p>
     </div>
   `;
@@ -990,14 +1516,33 @@ function buildAmbientHTML() {
 
 // ── Render: About ─────────────────────────────────────────────────────────────
 function buildAboutHTML() {
+  const g = currentGen();
+  const hasProp = !!g.prop;
   return `
     <div class="card">
       <div class="about-section">
+        <h3>About Generator Power Advisor</h3>
+        <p style="font-size:0.8rem;color:var(--text-muted);line-height:1.6;">
+          <strong>Generator Power Advisor (GPA)</strong> helps you decide what you can safely
+          power with a portable generator under real-world conditions — weighing running load,
+          the largest startup surge, elevation derating, and remaining fuel to give you a clear
+          <strong>Safe / Near Capacity / Unsafe</strong> answer, the reason behind it, and what to change.
+          It works fully offline and installs to your home screen.
+        </p>
+        <p style="font-size:0.75rem;color:var(--text-faint);line-height:1.6;margin-top:8px;">
+          Now advising on your <strong>${escHtml(g.short)}</strong>. Change or add a generator from the
+          Calculator tab. The appliance/RV profile below is the current default; saved profiles are on the roadmap.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="about-section">
         <h3>Equipment</h3>
+        <div class="spec-row"><span>Generator</span><span>${escHtml(g.short)} · ${escHtml(g.kind)}</span></div>
+        <div class="spec-row"><span>Gas capacity</span><span>${g.gas.running.toLocaleString()}W running / ${g.gas.peak.toLocaleString()}W peak</span></div>
+        ${hasProp ? `<div class="spec-row"><span>Propane capacity</span><span>${g.prop.running.toLocaleString()}W running / ${g.prop.peak.toLocaleString()}W peak</span></div>` : ''}
         <div class="spec-row"><span>Camper</span><span>2025 Coachmen Apex Ultra-Lite 28RBS</span></div>
-        <div class="spec-row"><span>Generator</span><span>WEN DF360iX Dual-Fuel Inverter</span></div>
-        <div class="spec-row"><span>Gas capacity</span><span>2,900W running / 3,600W peak</span></div>
-        <div class="spec-row"><span>Propane capacity</span><span>2,600W running / 3,500W peak</span></div>
         <div class="spec-row"><span>A/C</span><span>GE 15,000 BTU roof unit</span></div>
         <div class="spec-row"><span>A/C startup</span><span>Micro-Air EasyStart (reduces surge only)</span></div>
         <div class="spec-row"><span>Solar</span><span>300W roof panel</span></div>
@@ -1021,17 +1566,18 @@ function buildAboutHTML() {
       </div>
     </div>
 
+    ${hasProp ? `
     <div class="card">
       <div class="about-section">
-        <h3>WEN DF360iX Auto Fuel Selection</h3>
+        <h3>Dual-Fuel Operation${g.autoFuel === 'wen-priority' ? ' — Auto Fuel Selection' : ''}</h3>
         <p style="font-size:0.75rem;color:var(--text-muted);line-height:1.6;">
-          Propane is always the active fuel when the LPG hose is connected. Gasoline is reserve and not consumed while propane is connected.<br><br>
-          <strong>Propane runs out with hose connected:</strong> Generator shuts down — it will not auto-switch to gasoline. To continue: disconnect the LPG hose, then restart the generator.<br><br>
-          <strong>Running on gasoline + connect propane hose:</strong> Generator automatically switches to propane.<br><br>
-          Full switchover steps are on the <strong>Live Fuel Tracker</strong> tab. <em>Confirmed by WEN Technical Support.</em>
+          Propane is treated as the active fuel when the LPG hose is connected. Gasoline is reserve and not consumed while propane is connected.<br><br>
+          <strong>Propane runs out with hose connected:</strong> Most portable dual-fuel units shut down — they will not auto-switch to gasoline. To continue: disconnect the LPG hose, then restart the generator.<br><br>
+          <strong>Running on gasoline + connect propane hose:</strong> Auto-fuel-selection units switch to propane automatically.<br><br>
+          Full switchover steps are on the <strong>Live Fuel Tracker</strong> tab.${g.autoFuel === 'wen-priority' ? ' <em>WEN DF360iX behavior confirmed by WEN Technical Support.</em>' : ' <em>Verify exact behavior in your generator manual.</em>'}
         </p>
       </div>
-    </div>
+    </div>` : ''}
 
     <div class="card">
       <div class="disclaimer">
@@ -1042,7 +1588,7 @@ function buildAboutHTML() {
       </div>
     </div>
 
-    <div class="version">Mike's Camper Power Calculator · RV Energy Management &amp; Generator Runtime Planning<br>Built for WEN DF360iX + Coachmen Apex 28RBS · Offline-capable PWA</div>
+    <div class="version">Generator Power Advisor (GPA) · Know what you can safely run<br>Tuned for WEN DF360iX + Coachmen Apex 28RBS · Offline-capable PWA</div>
   `;
 }
 
@@ -1567,7 +2113,28 @@ function buildWorkflowsCard() {
     </div>`;
 }
 
-function ftComboGuidance(propane, gas) {
+function ftComboGuidance(hasProp, propane, gas) {
+  // Gas-only generators: no propane path at all.
+  if (!hasProp) {
+    if (gas) return `
+      <div class="ft-combo-header ft-combo-gas">
+        <span class="ft-combo-icon">⛽</span>
+        <span>Gasoline Only</span>
+      </div>
+      <ul class="ft-combo-list">
+        <li>⛽ <strong>Active fuel: Gasoline.</strong> This generator runs on gasoline only.</li>
+        <li>📦 Runtime is limited to the gasoline tank. Refuel to extend.</li>
+        <li>💡 Lowering the load (fewer high-draw appliances) is the main way to stretch runtime.</li>
+      </ul>`;
+    return `
+      <div class="ft-combo-header ft-combo-none">
+        <span class="ft-combo-icon">⛔</span>
+        <span>No Fuel Available</span>
+      </div>
+      <ul class="ft-combo-list">
+        <li>Generator cannot operate. Set <strong>Gasoline Available = Yes</strong> once the tank has fuel.</li>
+      </ul>`;
+  }
   if (propane && gas) return `
     <div class="ft-combo-header ft-combo-both">
       <span class="ft-combo-icon">🔥⛽</span>
@@ -1599,7 +2166,7 @@ function ftComboGuidance(propane, gas) {
     </div>
     <ul class="ft-combo-list">
       <li>⛽ <strong>Active fuel: Gasoline.</strong> No propane is connected, so the generator uses the gasoline tank.</li>
-      <li>📦 Runtime is limited to the gasoline tank (1.5 gal). No propane reserve.</li>
+      <li>📦 Runtime is limited to the gasoline tank. No propane reserve.</li>
       <li>⚠️ <strong>Auto-switch to propane:</strong> If a propane hose is connected while the generator is running on gasoline, the generator will automatically switch to propane.</li>
       <li>💡 To run on propane, connect the LPG hose and set Propane Connected = Yes above — the generator will switch automatically.</li>
     </ul>`;
@@ -1613,8 +2180,28 @@ function ftComboGuidance(propane, gas) {
     </ul>`;
 }
 
+function buildHomeHero() {
+  return `
+    <div class="gpa-hero">
+      <div class="gpa-hero-badge">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="50" cy="50" r="30" fill="none" stroke="currentColor" stroke-width="9"/>
+          <path d="M57 24 L34 53 H51 L44 76 L67 45 H49 L60 24 Z" fill="currentColor"/>
+        </svg>
+        Generator Power Advisor
+      </div>
+      <h2 class="gpa-hero-title">Know what you can safely run.</h2>
+      <p class="gpa-hero-sub">Your generator's real-world capacity — accounting for startup surge, elevation, and fuel — turned into clear, confident decisions. No signal required.</p>
+      <div class="gpa-hero-metrics">
+        <span class="gpa-hero-chip">⚡ <b>Dual-fuel</b> aware</span>
+        <span class="gpa-hero-chip">⛰️ <b>Elevation</b> derated</span>
+        <span class="gpa-hero-chip">📶 Works <b>offline</b></span>
+      </div>
+    </div>`;
+}
+
 function buildFuelTrackerHTML() {
-  return `<div id="ft-panel"></div>`;
+  return `${buildHomeHero()}<div id="ft-panel"></div>`;
 }
 
 function calcNudge(running) {
@@ -1629,6 +2216,10 @@ function renderFuelTrackerTab() {
 
   const { running } = calcLoads();
   const ft = state.ft;
+  const gen = currentGen();
+  const hasProp = genHasPropane();
+  const gTank = gen.gas.tankGal + ' gal tank';
+  const pTank = hasProp ? gen.prop.tankLb + ' lb tank' : '';
   const src = activeFuelSource();
   const { gasGalHr, gasHrs, propLbHr, propHrs } = ftRuntimes(running);
   const combinedHrs = gasHrs + propHrs;
@@ -1662,8 +2253,8 @@ function renderFuelTrackerTab() {
     ${!state.welcomeDismissed ? `
     <div class="welcome-banner" id="welcome-banner">
       <div class="welcome-body">
-        <div class="welcome-title">👋 Welcome to Mike's Camper Power Calculator</div>
-        <p class="welcome-sub">Built for the 2025 Coachmen Apex 28RBS · WEN DF360iX · GE 15,000 BTU A/C · Starlink Mini · 300W solar</p>
+        <div class="welcome-title">👋 Welcome to Generator Power Advisor</div>
+        <p class="welcome-sub">Advising on your <strong>${escHtml(gen.short)}</strong> (${escHtml(gen.kind)}). Change it any time from the <em>Calculator</em> tab.</p>
         <p class="welcome-sub" style="margin-top:4px;"><strong>Recommended workflow:</strong> Choose a preset on the <em>Calculator</em> tab, then come back here to check runtime.</p>
       </div>
       <button class="welcome-dismiss" onclick="dismissWelcome()">Got it ✓</button>
@@ -1672,8 +2263,8 @@ function renderFuelTrackerTab() {
     <!-- Quick Start -->
     ${buildQuickStartCard()}
 
-    <!-- What am I looking at -->
-    ${buildWhatAmICard()}
+    <!-- What am I looking at (propane/reserve concepts — dual-fuel only) -->
+    ${hasProp ? buildWhatAmICard() : ''}
 
     <!-- Fuel Tracker (moved here for quick access) -->
     <div class="card">
@@ -1693,11 +2284,11 @@ function renderFuelTrackerTab() {
           <div class="ft-empty-row"><span>Elapsed</span><span>${fmtElapsed(elapsedMs)}</span></div>
           <div class="ft-empty-row"><span>Load at start</span><span>${ft.startLoadW != null ? fmtW(ft.startLoadW) : '—'}</span></div>
           ${loadChangedNote}
-          ${ft.trackingFuel === 'propane' && ft.gasAvailable ? `
+          ${hasProp && ft.trackingFuel === 'propane' && ft.gasAvailable ? `
           <p class="ft-reserve-note" style="margin-top:8px;">
             When propane is depleted, the generator shuts down — it will not switch to gasoline automatically. Disconnect the LPG hose and restart to continue on gasoline.
           </p>` : ''}
-          ${ft.trackingFuel === 'gas' ? `
+          ${hasProp && ft.trackingFuel === 'gas' ? `
           <p class="ft-reserve-note" style="margin-top:8px;">
             ⚠️ Gasoline remains active only while the propane hose is disconnected. Connecting a propane hose while the generator is running will automatically switch it to propane.
           </p>` : ''}
@@ -1707,45 +2298,49 @@ function renderFuelTrackerTab() {
           </div>
         </div>
       ` : `
-        <div class="ft-start-grid">
+        <div class="${hasProp ? 'ft-start-grid' : 'ft-start-col'}">
+          ${hasProp ? `
           <div class="ft-start-col">
             <button class="tracker-start-btn tracker-prop-btn tracker-card-start-btn ft-start-full"
               onclick="${!ft.propaneConnected ? `confirmFtPropane()` : `ftStartPropaneTracker()`}">
               🔥 Start Propane Tracker
-              <span class="tracker-btn-sub">Use when LPG hose is connected — WEN uses propane first</span>
+              <span class="tracker-btn-sub">Use when the LPG hose is connected — propane is used first</span>
             </button>
             ${!ft.propaneConnected ? `<p class="ft-start-warn">⚠️ Propane is set to Not Connected. Tapping will set it to Connected and start the propane tracker.</p>` : ''}
-          </div>
+          </div>` : ''}
           <div class="ft-start-col">
             <button class="tracker-start-btn tracker-gas-btn tracker-card-start-btn ft-start-full"
-              onclick="${ft.propaneConnected ? `confirmFtGas()` : `ftStartGasTracker()`}">
+              onclick="${hasProp && ft.propaneConnected ? `confirmFtGas()` : `ftStartGasTracker()`}">
               ⛽ Start Gasoline Tracker
-              <span class="tracker-btn-sub">Use only after LPG hose is disconnected or when running gas-only</span>
+              <span class="tracker-btn-sub">${hasProp ? 'Use after the LPG hose is disconnected or when running gas-only' : 'Track gasoline runtime at the current load'}</span>
             </button>
-            ${ft.propaneConnected ? `<p class="ft-start-warn">⚠️ Propane is Connected. Tapping will set it to Disconnected and start the gasoline tracker. The WEN uses propane first if LPG is connected.</p>` : ''}
+            ${hasProp && ft.propaneConnected ? `<p class="ft-start-warn">⚠️ Propane is Connected. Tapping will set it to Disconnected and start the gasoline tracker. Propane is used first if LPG is connected.</p>` : ''}
           </div>
         </div>
         ${ft.startMs ? `<button class="ft-reset-btn" style="margin-top:10px;" onclick="ftResetTracking()">↺ Clear Previous Session</button>` : ''}
       `}
     </div>
 
-    <!-- Recommended Workflows -->
-    ${buildWorkflowsCard()}
+    <!-- Recommended Workflows (fuel guidance is propane-oriented — dual-fuel only) -->
+    ${hasProp ? buildWorkflowsCard() : ''}
 
     <!-- Fuel Configuration -->
     <div class="card">
       <h2>Fuel Configuration</h2>
       <p class="ft-sub" style="margin-bottom:10px;">
-        Propane is always active when the LPG hose is connected. Gasoline is reserve and is not consumed while propane is connected. Connecting a propane hose while running on gasoline will automatically switch the generator to propane.
+        ${hasProp
+          ? 'Propane is always active when the LPG hose is connected. Gasoline is reserve and is not consumed while propane is connected. Connecting a propane hose while running on gasoline will automatically switch the generator to propane.'
+          : `The ${escHtml(gen.short)} runs on gasoline only. Runtime below is based on your gasoline tank.`}
       </p>
       <div class="ft-config-grid">
+        ${hasProp ? `
         <div class="ft-config-item">
           <span class="ft-config-label">Propane Connected</span>
           <div class="ft-toggle-pair">
             <button class="ft-opt-btn ${ft.propaneConnected ? 'active' : ''}" onclick="setFtPropane(true)">Yes</button>
             <button class="ft-opt-btn ${!ft.propaneConnected ? 'active' : ''}" onclick="setFtPropane(false)">No</button>
           </div>
-        </div>
+        </div>` : ''}
         <div class="ft-config-item">
           <span class="ft-config-label">Gasoline Available</span>
           <div class="ft-toggle-pair">
@@ -1758,12 +2353,12 @@ function renderFuelTrackerTab() {
         <span class="ft-active-label">Active Fuel Source</span>
         <span class="ft-active-value">${srcLabel}</span>
       </div>
-      ${src === 'none' ? '<div class="ft-no-fuel">⚠️ No fuel source selected. Connect propane or confirm gasoline is available.</div>' : ''}
+      ${src === 'none' ? `<div class="ft-no-fuel">⚠️ No fuel source selected. ${hasProp ? 'Connect propane or confirm gasoline is available.' : 'Confirm gasoline is available.'}</div>` : ''}
     </div>
 
     <!-- Fuel Combination Guidance -->
     <div class="card ft-combo-card">
-      ${ftComboGuidance(ft.propaneConnected, ft.gasAvailable)}
+      ${ftComboGuidance(hasProp, ft.propaneConnected, ft.gasAvailable)}
     </div>
 
     <!-- Current Load -->
@@ -1776,31 +2371,32 @@ function renderFuelTrackerTab() {
 
     <!-- Runtime cards -->
     <div class="ft-runtime-grid">
+      ${hasProp ? `
       <div class="card ft-runtime-card ${src === 'propane' ? 'ft-active-card' : ''}">
         <h2 class="ft-fuel-heading prop-title">🔥 Propane${src === 'propane' ? ' <span class="ft-active-badge">ACTIVE</span>' : ''}</h2>
         ${ft.propaneConnected ? `
           <div class="ft-runtime-val ${propHrs >= 10 ? 'ft-green' : propHrs >= 6 ? 'ft-yellow' : 'ft-red'}">${fmt(propHrs)} hrs</div>
-          <div class="ft-runtime-sub">${fmt(propLbHr, 2)} lb/hr · 20 lb tank</div>
+          <div class="ft-runtime-sub">${fmt(propLbHr, 2)} lb/hr · ${pTank}</div>
           <div class="ft-empty-row"><span>Est. empty</span><span>${ftEmptyTime(nowMs, propHrs)}</span></div>
         ` : '<p class="tracker-idle">Not connected.</p>'}
-      </div>
-      <div class="card ft-runtime-card ${src === 'gas' ? 'ft-active-card' : 'ft-reserve-card'}">
-        <h2 class="ft-fuel-heading gas-title">⛽ Gasoline${src === 'gas' ? ' <span class="ft-active-badge">ACTIVE</span>' : (ft.propaneConnected && ft.gasAvailable ? ' <span class="ft-reserve-badge">RESERVE</span>' : '')}</h2>
+      </div>` : ''}
+      <div class="card ft-runtime-card ${src === 'gas' ? 'ft-active-card' : (hasProp ? 'ft-reserve-card' : '')} ${hasProp ? '' : 'ft-start-full'}">
+        <h2 class="ft-fuel-heading gas-title">⛽ Gasoline${src === 'gas' ? ' <span class="ft-active-badge">ACTIVE</span>' : (hasProp && ft.propaneConnected && ft.gasAvailable ? ' <span class="ft-reserve-badge">RESERVE</span>' : '')}</h2>
         ${ft.gasAvailable ? (() => {
-          if (ft.propaneConnected) {
+          if (hasProp && ft.propaneConnected) {
             // Gasoline is reserve — NOT being consumed while propane is connected
             const gasStartMs = nowMs + propHrs * 3600000;
             const gasCombinedEmptyMs = gasStartMs + gasHrs * 3600000;
             return `
               <div class="ft-runtime-val ft-reserve-val">${fmt(gasHrs)} hrs</div>
-              <div class="ft-runtime-sub">Reserve runtime · 1.5 gal tank</div>
+              <div class="ft-runtime-sub">Reserve runtime · ${gTank}</div>
               <div class="ft-empty-row"><span>Usable after propane at</span><span>${fmtTime(gasStartMs)}</span></div>
               <div class="ft-empty-row"><span>Est. gas empty at</span><span>${fmtTime(gasCombinedEmptyMs)}</span></div>
               <p class="ft-reserve-note">⚠️ Not being consumed now. When propane runs out, the generator shuts down — it will NOT auto-switch to gasoline. Disconnect the LPG hose and restart to use gasoline.</p>`;
           } else {
             return `
               <div class="ft-runtime-val ${gasHrs >= 10 ? 'ft-green' : gasHrs >= 6 ? 'ft-yellow' : 'ft-red'}">${fmt(gasHrs)} hrs</div>
-              <div class="ft-runtime-sub">${fmt(gasGalHr, 2)} gal/hr · 1.5 gal tank</div>
+              <div class="ft-runtime-sub">${fmt(gasGalHr, 2)} gal/hr · ${gTank}</div>
               <div class="ft-empty-row"><span>Est. empty</span><span>${ftEmptyTime(nowMs, gasHrs)}</span></div>`;
           }
         })() : '<p class="tracker-idle">Not available.</p>'}
@@ -2017,7 +2613,33 @@ function showTab(id) {
   if (id !== 'ftracker') stopFtTickTimer();
 }
 
+// ── Theme (light / dark) ──────────────────────────────────────────────────────
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  let next;
+  if (cur === 'light') next = 'dark';
+  else if (cur === 'dark') next = 'light';
+  else {
+    // No explicit choice yet — flip relative to the current system preference.
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    next = prefersDark ? 'light' : 'dark';
+  }
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('gpaTheme', next); } catch (_) {}
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────────────
+window.toggleTheme = toggleTheme;
+window.openGenPicker = openGenPicker;
+window.closeGenPicker = closeGenPicker;
+window.renderGenModal = renderGenModal;
+window.filterGenList = filterGenList;
+window.confirmGenSpecs = confirmGenSpecs;
+window.cloneGenToCustom = cloneGenToCustom;
+window.selectGenerator = selectGenerator;
+window.openCustomGenForm = openCustomGenForm;
+window.saveCustomGen = saveCustomGen;
+window.deleteCustomGen = deleteCustomGen;
 window.toggleAppliance = toggleAppliance;
 window.toggleSection = toggleSection;
 window.collapseAll = collapseAll;
