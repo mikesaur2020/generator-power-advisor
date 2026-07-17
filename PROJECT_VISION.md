@@ -1,4 +1,7 @@
-# Project Vision — Mike's Camper Power Calculator
+# Project Vision — Generator Power Advisor (GPA)
+
+> Superseded by [PRODUCT.md](PRODUCT.md) as the primary source of truth. Retained for
+> the original equipment specs and design rationale. (Formerly "Mike's Camper Power Calculator".)
 
 ## Project Positioning
 

@@ -28,7 +28,7 @@ The application helps answer:
 - Can I safely run this appliance combination?
 - How much generator headroom do I have?
 
-**Live at:** https://mikesaur2020.github.io/camper-power-calculator/
+**Live at:** https://mikesaur2020.github.io/generator-power-advisor/
 
 See [PROJECT_VISION.md](PROJECT_VISION.md) for equipment specs and design decisions.
 See [AI_HANDOFF.md](AI_HANDOFF.md) for feature inventory, known issues, and future enhancements.
@@ -169,7 +169,7 @@ If A/C Cooling is on **and** a high-load appliance (Microwave, Toaster, Coffee M
 ### Run locally
 
 ```bash
-cd camper-power-calculator
+cd generator-power-advisor
 python3 -m http.server 8000
 ```
 
@@ -179,7 +179,7 @@ Then open: [http://localhost:8000](http://localhost:8000)
 
 1. Push to GitHub (main branch, root folder)
 2. **GitHub repo → Settings → Pages → Deploy from branch → main → / (root)**
-3. Public URL: **https://mikesaur2020.github.io/camper-power-calculator/**
+3. Public URL: **https://mikesaur2020.github.io/generator-power-advisor/**
 
 ### Install on iPhone
 

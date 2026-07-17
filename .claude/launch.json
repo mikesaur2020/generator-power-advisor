@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "camper-power",
+      "name": "generator-power-advisor",
       "runtimeExecutable": "python3",
       "runtimeArgs": ["-m", "http.server", "8432"],
       "port": 8432

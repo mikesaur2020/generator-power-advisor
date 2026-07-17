@@ -9,7 +9,8 @@
 **Brand shorthand:** GPA
 **Type:** Installable, offline-first Progressive Web App (PWA), destined for the
 Apple App Store and Google Play Store (via a thin native wrapper in a later phase).
-**Repo:** `camper-power-calculator/` (folder name is historical; product is GPA).
+**Repo:** `generator-power-advisor` (renamed from `camper-power-calculator`). The
+`localStorage` key stays `camperPowerState` to preserve existing users' saved data.
 
 ---
 

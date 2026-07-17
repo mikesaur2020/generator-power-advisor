@@ -1,4 +1,4 @@
-# AI Handoff — Mike's Camper Power Calculator
+# AI Handoff — Generator Power Advisor (GPA)
 
 Read [PROJECT_VISION.md](PROJECT_VISION.md) first for equipment specs, design decisions, and assumptions.
 
@@ -31,10 +31,10 @@ Future work should focus on **usability improvements**, **field validation** (co
 ## Current State (as of June 2026)
 
 ### Live at
-**https://mikesaur2020.github.io/camper-power-calculator/**
+**https://mikesaur2020.github.io/generator-power-advisor/**
 
 ### Repo
-`/Users/mikesaur/Documents/ClaudeCode/ai-automation/camper-power-calculator`
+`/Users/mikesaur/Documents/ClaudeCode/ai-automation/generator-power-advisor`
 
 ### Tech stack
 Static PWA — HTML + CSS + vanilla JS. No build process. Deploys from GitHub Pages main branch root. Service worker uses network-first caching.
@@ -62,7 +62,7 @@ EOF
 | `app.js` | All logic, state, calculations, HTML builders |
 | `style.css` | All styles (dark theme, mobile-first) |
 | `index.html` | Shell — tabs, panels, modal, service worker registration |
-| `service-worker.js` | Network-first caching (cache name: `camper-power-vN`) |
+| `service-worker.js` | Network-first caching (cache name: `gpa-vN`) |
 | `manifest.json` | PWA manifest |
 
 ### Where to find things in `app.js`

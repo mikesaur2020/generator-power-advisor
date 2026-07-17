@@ -277,6 +277,9 @@ const state = {
 };
 
 // ── Persistence ───────────────────────────────────────────────────────────────
+// NOTE: the storage key stays 'camperPowerState' (the app's original name) so that
+// existing users keep their saved settings, custom generators, and tests after the
+// rename to Generator Power Advisor. Do not rename it without a migration.
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem('camperPowerState') || '{}');
