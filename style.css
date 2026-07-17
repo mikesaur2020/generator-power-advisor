@@ -2003,3 +2003,5 @@ nav button.active .ic { opacity: 1; }
 
 /* Nav icon spacing polish */
 nav button { display: inline-flex; align-items: center; }
+
+.onboard-sub { font-size: 0.72rem; color: var(--text-muted); margin: -4px 0 12px; line-height: 1.45; }

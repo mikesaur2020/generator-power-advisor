@@ -5,6 +5,9 @@ that turns a portable generator's real-world capacity — running load, largest 
 elevation derating, and remaining fuel — into a clear **Safe / Near Capacity / Unsafe** answer,
 the reason behind it, and what to change.
 
+Built for anyone on generator power — **home backup & outages, RVs, job sites, cabins, farms,
+tailgating, outdoor events, and off-grid living.**
+
 > Formerly *Mike's Camper Power Calculator.* See [PRODUCT.md](PRODUCT.md) for the product
 > vision, roadmap, and design system. **Pick your generator** from a built-in database
 > (dual-fuel and gas-only units) or define a custom one on the Calculator tab — the whole

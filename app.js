@@ -30,8 +30,8 @@ function ic(name, cls) {
 // To update watt values, edit running/surge below and reload the page.
 const APPLIANCES = [
   // id, name, running, surge, defaultOn, group, notes
-  { id: 'ac_cool', name: 'A/C Cooling Mode', detail: 'Compressor + Fan w/ Micro-Air EasyStart', running: 1700, surge: 750, on: true,  group: 'always' },
-  { id: 'fridge',  name: '12V Refrigerator', detail: '', running: 120,  surge: 120, on: true,  group: 'always' },
+  { id: 'ac_cool', name: 'A/C Cooling Mode', detail: 'Compressor + fan (soft-start equipped)', running: 1700, surge: 750, on: true,  group: 'always' },
+  { id: 'fridge',  name: 'Refrigerator', detail: '', running: 120,  surge: 120, on: true,  group: 'always' },
   { id: 'starlink',name: 'Starlink Mini',    detail: '', running: 40,   surge: 0,   on: true,  group: 'always' },
   { id: 'usb',     name: 'USB Charging',     detail: 'Phones / devices', running: 50, surge: 0, on: true, group: 'always' },
   { id: 'tv',      name: 'Smart TV',         detail: '', running: 100,  surge: 0,   on: true,  group: 'always' },
@@ -45,7 +45,7 @@ const APPLIANCES = [
   { id: 'furnace', name: 'Furnace Blower',   detail: 'Cold-weather use', running: 350, surge: 350, on: false, group: 'other' },
   { id: 'bathfan', name: 'Bathroom Vent Fan',detail: '', running: 40,   surge: 40,  on: false, group: 'other' },
   { id: 'rangehood',name: 'Range Hood Fan/Light', detail: '', running: 50, surge: 25, on: false, group: 'other' },
-  { id: 'leds',    name: 'Interior LED Lighting', detail: '', running: 75, surge: 0, on: true,  group: 'other' },
+  { id: 'leds',    name: 'LED Lighting', detail: '', running: 75, surge: 0, on: true,  group: 'other' },
 ];
 
 // ── Generator database ────────────────────────────────────────────────────────
@@ -235,7 +235,7 @@ const BUILT_IN_PRESETS = [
   {
     id: 'normal-ac', name: 'Normal A/C', builtIn: true, battery: 'full', elevation: 1400,
     appliances: makeAppliances(['ac_cool','fridge','starlink','usb','tv','leds']),
-    description: 'Typical daytime camping setup. A/C cooling on, all core appliances running.',
+    description: 'Typical everyday load — A/C cooling on, core devices running.',
     workflow: '☀️ Daytime Cooling',
   },
   {
@@ -247,7 +247,7 @@ const BUILT_IN_PRESETS = [
   {
     id: 'coffee', name: 'Coffee Time', builtIn: true, battery: 'full', elevation: 1400,
     appliances: makeAppliances(['ac_fan','fridge','starlink','usb','tv','coffee','leds']),
-    description: 'A/C switched to Fan Only for morning coffee. Temporary — switch back to A/C Cooling after.',
+    description: 'A/C switched to Fan Only to free power for the coffee maker. Temporary — switch back to A/C Cooling after.',
     workflow: '☕ Morning',
   },
   {
@@ -259,7 +259,7 @@ const BUILT_IN_PRESETS = [
   {
     id: 'overnight', name: 'Overnight', builtIn: true, battery: 'full', elevation: 1400,
     appliances: makeAppliances(['ac_cool','fridge','starlink','leds']),
-    description: 'Minimal overnight load. TV and USB charging off for longer runtime while sleeping.',
+    description: 'Minimal low-draw load — TV and USB charging off for the longest runtime overnight.',
     workflow: '🌙 Overnight',
   },
 ];
@@ -1109,6 +1109,7 @@ function buildCalculatorHTML() {
         <span class="onboard-title">New to GPA? Three steps</span>
         <button class="onboard-dismiss" onclick="dismissWelcome()">Got it</button>
       </div>
+      <p class="onboard-sub">For home backup &amp; outages, RVs, job sites, cabins, farms, tailgating, and off-grid.</p>
       <ol class="onboard-steps">
         <li><span class="onboard-num">1</span><div><strong>Confirm your generator</strong><span>Tap <em>Change</em> to pick your exact model.</span></div></li>
         <li><span class="onboard-num">2</span><div><strong>Choose what you're running</strong><span>Use a preset, or toggle appliances below.</span></div></li>
@@ -1682,7 +1683,7 @@ function buildAmbientHTML() {
       <p style="font-size:0.8rem;margin-bottom:10px;">
         The thermostat setpoint does <strong>not</strong> reduce A/C running watts while the compressor is
         actively on. It changes <em>duty cycle</em> — how often the compressor runs — which affects
-        average fuel burn and overnight comfort.
+        average fuel burn and how long your fuel lasts.
       </p>
       <ul class="guidance-list">
         <li><span>❄️</span><span>Lower setpoint (e.g. 68°F) → compressor runs longer → more fuel</span></li>
@@ -1754,11 +1755,13 @@ function buildAboutHTML() {
           power with a portable generator under real-world conditions — weighing running load,
           the largest startup surge, elevation derating, and remaining fuel to give you a clear
           <strong>Safe / Near Capacity / Unsafe</strong> answer, the reason behind it, and what to change.
-          It works fully offline and installs to your home screen.
+          It's built for anyone on generator power — <strong>home backup and outages, RVs, job sites,
+          cabins, farms, tailgating, and off-grid living</strong>. Works fully offline and installs to your home screen.
         </p>
         <p style="font-size:0.75rem;color:var(--text-faint);line-height:1.6;margin-top:8px;">
           Now advising on your <strong>${escHtml(g.short)}</strong>. Change or add a generator from the
-          Calculator tab. The appliance/RV profile below is the current default; saved profiles are on the roadmap.
+          Calculator tab. The appliance profile below is the current default; saved profiles for other
+          setups (home backup, job site, and more) are on the roadmap.
         </p>
       </div>
     </div>
@@ -1877,7 +1880,7 @@ function renderShorePowerTab() {
     <!-- Intro -->
     <div class="card">
       <h2>30A Shore Power</h2>
-      <p class="shore-intro">Will the campground pedestal support this load? This tab checks the electrical draw of your selected appliances against a standard <strong>30A RV pedestal</strong> — a separate use case from generator operation. No fuel, runtime, weather, or elevation logic applies here.</p>
+      <p class="shore-intro">Will a 30A hookup support this load? This tab checks the electrical draw of your selected appliances against a standard <strong>30A / 120V circuit</strong> — an RV pedestal, a campground hookup, or a 30A generator/transfer outlet — separate from generator runtime. No fuel, runtime, weather, or elevation logic applies here.</p>
       <div class="shore-limit-row">
         <div class="shore-limit">
           <span class="shore-limit-label">Theoretical limit</span>
@@ -2265,14 +2268,14 @@ function closeHelp() {
 function buildQuickStartCard() {
   if (state.quickStartCollapsed) {
     return `<div class="card qs-collapsed-bar">
-      <span>🚐 How to Use</span>
+      <span>${ic('info')} How to Use</span>
       <button class="qs-toggle-btn" onclick="toggleQuickStart()">Show</button>
     </div>`;
   }
   return `
     <div class="card qs-card">
       <div class="qs-header">
-        <h2>🚐 How to Use</h2>
+        <h2>${ic('info')} How to Use</h2>
         <button class="qs-toggle-btn" onclick="toggleQuickStart()">Hide</button>
       </div>
       <ol class="qs-list">
@@ -2450,7 +2453,7 @@ function buildHomeHero() {
         Generator Power Advisor
       </div>
       <h2 class="gpa-hero-title">Know what you can safely run.</h2>
-      <p class="gpa-hero-sub">Your generator's real-world capacity — accounting for startup surge, elevation, and fuel — turned into clear, confident decisions. No signal required.</p>
+      <p class="gpa-hero-sub">Whether it's a home outage, a job site, an RV, a cabin, or off-grid — GPA turns your generator's real-world capacity, accounting for startup surge, elevation, and fuel, into clear, confident decisions. No signal required.</p>
       <div class="gpa-hero-metrics">
         <span class="gpa-hero-chip">${ic('bolt')} <b>Dual-fuel</b> aware</span>
         <span class="gpa-hero-chip">${ic('mountain')} <b>Elevation</b> derated</span>

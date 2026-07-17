@@ -1,7 +1,7 @@
 {
   "name": "Generator Power Advisor",
   "short_name": "GPA",
-  "description": "Know what you can safely run on a portable generator — real-world load, surge, elevation, and fuel guidance. Works offline.",
+  "description": "Know what you can safely run on a portable generator — for home backup and outages, RVs, job sites, cabins, and off-grid. Real-world load, surge, elevation, and fuel guidance. Works offline.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0c1420",

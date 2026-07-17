@@ -1,9 +1,9 @@
-const CACHE_NAME = 'gpa-v26';
+const CACHE_NAME = 'gpa-v27';
 const ASSETS = [
   './',
   './index.html',
-  './style.css?v=gpa6',
-  './app.js?v=gpa6',
+  './style.css?v=gpa7',
+  './app.js?v=gpa7',
   './manifest.json',
   './favicon.svg',
   './favicon-32.png',
