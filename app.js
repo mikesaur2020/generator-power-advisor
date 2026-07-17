@@ -555,23 +555,51 @@ function populateVerdict(running, peak, maxSurge, derated, gas, prop) {
   const limDer = hasProp ? derated.prop : derated.gas;
   const limName = hasProp ? 'propane' : 'gasoline';
   const cls = 'v-' + lim.status;            // v-good | v-near | v-over
+  const deratePct = Math.round((1 - derated.factor) * 100);
   card.className = 'card verdict-card ' + cls;
 
   const pill = document.getElementById('verdict-pill');
-  pill.textContent = lim.status === 'good' ? '✅ Safe'
-                   : lim.status === 'near' ? '⚠️ Near Capacity' : '❌ Unsafe';
+  pill.innerHTML = lim.status === 'good' ? '<span aria-hidden="true">✅</span> Safe'
+                 : lim.status === 'near' ? '<span aria-hidden="true">⚠️</span> Near Capacity'
+                 : '<span aria-hidden="true">⛔</span> Unsafe';
   pill.className = 'verdict-pill ' + cls;
 
+  // Confidence in the recommendation (honest: lower near the boundary or when
+  // elevation derating — an estimate — is heavy).
+  const conf = verdictConfidence(lim, derated);
+  const confEl = document.getElementById('verdict-conf');
+  confEl.className = 'verdict-conf ' + conf.cls;
+  confEl.textContent = conf.level + ' confidence';
+
   document.getElementById('verdict-fuel').innerHTML =
-    `on ${limName}<br>${limDer.running.toLocaleString()}W limit`;
+    `on ${limName} · ${limDer.running.toLocaleString()}W est. limit`;
 
   document.getElementById('verdict-headline').textContent =
-    lim.status === 'good' ? 'You can safely run this.'
+    lim.status === 'good' ? 'This should run safely.'
     : lim.status === 'near' ? "You're close to the limit."
-    : 'This exceeds your generator.';
+    : 'This is more than your generator can handle.';
 
   document.getElementById('verdict-why').innerHTML =
-    verdictWhy(lim, gas, prop, running, peak, derated, limName, limDer);
+    verdictWhy(lim, running, peak, limName, limDer);
+
+  // Recommended action (advice, not just status) — with an optional one-tap apply.
+  const action = verdictAction(lim, gas, prop, running, peak, limName);
+  const actionEl = document.getElementById('verdict-action');
+  const actionBtn = document.getElementById('verdict-action-btn');
+  if (!action) {
+    actionEl.style.display = 'none';
+  } else {
+    actionEl.style.display = 'flex';
+    document.getElementById('verdict-action-text').innerHTML = action.text;
+    if (action.apply === 'fan') {
+      actionBtn.style.display = 'inline-flex';
+      actionBtn.textContent = 'Switch A/C to Fan mode';
+      actionBtn.onclick = applyFanRecommendation;
+    } else {
+      actionBtn.style.display = 'none';
+      actionBtn.onclick = null;
+    }
+  }
 
   document.getElementById('vm-load').textContent = running.toLocaleString() + 'W';
 
@@ -586,48 +614,105 @@ function populateVerdict(running, peak, maxSurge, derated, gas, prop) {
   const surgeChip = document.getElementById('vchip-surge');
   const surgeOk = lim.peakHead >= 0;
   surgeChip.className = 'vchip ' + (surgeOk ? 'v-good' : 'v-over');
-  surgeChip.innerHTML = `Startup surge <b>${surgeOk ? 'OK' : 'over'}</b> · peak ${peak.toLocaleString()}W`;
+  surgeChip.innerHTML = `Startup surge <b>${surgeOk ? 'fits' : 'over'}</b> · est. peak ${peak.toLocaleString()}W`;
 
   const derChip = document.getElementById('vchip-derate');
-  const deratePct = Math.round((1 - derated.factor) * 100);
   derChip.className = 'vchip';
   derChip.innerHTML = state.elevation > 0
-    ? `Elevation <b>${state.elevation.toLocaleString()} ft</b> · −${deratePct}%`
+    ? `Elevation <b>${state.elevation.toLocaleString()} ft</b> · −${deratePct}% est.`
     : `Elevation <b>sea level</b> · no derate`;
+
+  // "What this is based on" — data provenance / transparency.
+  const src = genSource();
+  document.getElementById('verdict-basis-body').innerHTML = `
+    <div class="basis-row"><span class="basis-dot basis-spec" aria-hidden="true"></span>
+      <span><strong>Generator ratings</strong> — ${escHtml(currentGen().short)}, ${src.label}</span></div>
+    <div class="basis-row"><span class="basis-dot basis-input" aria-hidden="true"></span>
+      <span><strong>Appliance loads</strong> — estimated typical watts, from your on/off selection</span></div>
+    <div class="basis-row"><span class="basis-dot basis-est" aria-hidden="true"></span>
+      <span><strong>Elevation derating</strong> — estimated (~3.5% per 1,000 ft)${state.elevation > 0 ? `, −${deratePct}% applied` : ''}</span></div>
+    <div class="basis-row"><span class="basis-dot basis-obs" aria-hidden="true"></span>
+      <span><strong>Real-world results</strong> — log combinations on the Real-World Tests tab to raise confidence</span></div>`;
 }
 
-function verdictWhy(lim, gas, prop, running, peak, derated, limName, limDer) {
-  const highOn = APPLIANCES.filter(a => a.group === 'highload' && state.appliances[a.id]).map(a => a.name);
-  const acOn = state.appliances['ac_cool'];
-  const pct = Math.round(lim.runPct * 100);
-  const hasProp = !!prop;
+// Provenance of the selected generator's ratings.
+function genSource() {
+  const g = currentGen();
+  return g.builtIn
+    ? { kind: 'spec', label: 'manufacturer-published spec (typical — verify)', short: 'Published spec' }
+    : { kind: 'input', label: 'values you entered', short: 'Your values' };
+}
 
+// Confidence in the verdict direction. Comfortably safe or clearly over → High;
+// near the fuzzy boundary, or heavy (estimated) elevation derating → Moderate.
+function verdictConfidence(lim, derated) {
+  const nearBoundary = lim.runPct > 0.78 && lim.runPct < 1.02;
+  const heavyDerate = (1 - derated.factor) > 0.10;
+  if (nearBoundary || heavyDerate) return { level: 'Moderate', cls: 'conf-mod' };
+  return { level: 'High', cls: 'conf-high' };
+}
+
+// Explanation of the situation (the "why"). Recommendations live in verdictAction.
+function verdictWhy(lim, running, peak, limName, limDer) {
+  const pct = Math.round(lim.runPct * 100);
   if (lim.status === 'good') {
-    return `Comfortable margin — running load is <strong>${pct}%</strong> of ${limName}'s continuous capacity, and the startup surge fits within peak.`;
+    return `Comfortable margin — the estimated load is <strong>${pct}%</strong> of ${limName}'s continuous capacity, and the startup surge fits within peak.`;
   }
   if (lim.status === 'near') {
-    if (highOn.length && acOn) {
-      return `Running <strong>${highOn.join(' + ')}</strong> alongside <strong>A/C Cooling</strong> leaves little headroom on ${limName}. <span class="vw-tip">Switch A/C to Fan Only to free ~1,450W.</span>`;
-    }
-    return `Running load is <strong>${pct}%</strong> of ${limName}'s continuous capacity — close to the limit. Avoid adding another large appliance.`;
+    return `The estimated load is <strong>${pct}%</strong> of ${limName}'s continuous capacity — close to the limit.`;
   }
-  // over
-  let msg;
   if (lim.peakHead < 0 && lim.runHead >= 0) {
-    msg = `The <strong>startup surge</strong> (peak ${peak.toLocaleString()}W) exceeds ${limName}'s ${limDer.peak.toLocaleString()}W peak — the generator may stall when the largest load starts.`;
-  } else {
-    msg = `Running load <strong>${running.toLocaleString()}W</strong> is above ${limName}'s <strong>${limDer.running.toLocaleString()}W</strong> continuous limit.`;
+    return `Running load fits, but the estimated <strong>startup surge</strong> (peak ${peak.toLocaleString()}W) exceeds ${limName}'s ${limDer.peak.toLocaleString()}W peak — the generator may stall when the largest load starts.`;
   }
-  if (highOn.length && acOn) {
-    msg += ` <span class="vw-tip">Switch A/C to Fan Only</span> before running ${highOn.join(' / ')}.`;
-  } else if (highOn.length) {
-    msg += ` Turn off <strong>${highOn.join(' / ')}</strong>.`;
+  return `The estimated running load (<strong>${running.toLocaleString()}W</strong>) is above ${limName}'s <strong>${limDer.running.toLocaleString()}W</strong> continuous limit.`;
+}
+
+// Concrete recommendation for Near / Unsafe states. Returns {text, apply?} or null.
+function verdictAction(lim, gas, prop, running, peak, limName) {
+  if (lim.status === 'good') return null;
+  const highOn = APPLIANCES.filter(a => a.group === 'highload' && state.appliances[a.id]);
+  const acOn = state.appliances['ac_cool'];
+  const hasProp = !!prop;
+  const fanSave = AC_RUN_W - AC_FAN_W;   // ~1,450W freed by switching to Fan mode
+  const names = arr => arr.map(a => a.name).join(' and ');
+
+  // A/C Cooling + a high-draw appliance → switch to Fan mode (quantified, one-tap).
+  if (acOn && highOn.length) {
+    return {
+      text: `Switch the A/C to <strong>Fan mode</strong> before running ${names(highOn)} — it frees about <strong>${fanSave.toLocaleString()}W</strong> of capacity.`,
+      apply: 'fan',
+    };
   }
-  // On dual-fuel units, surface gasoline's extra headroom when it would help.
-  if (hasProp && gas.runHead >= 0) {
-    msg += ` <span class="vw-tip">Gasoline would handle this</span> (+${gas.runHead.toLocaleString()}W headroom) — switch fuels or reduce load.`;
+  // Two+ high-draw appliances at once → run them one at a time.
+  if (highOn.length >= 2) {
+    return { text: `Run one high-draw appliance at a time — turn off <strong>${highOn[0].name}</strong> before starting <strong>${highOn[1].name}</strong>.` };
   }
-  return msg;
+  // Surge-limited (running fits, peak doesn't) → stagger motor starts.
+  if (lim.peakHead < 0 && lim.runHead >= 0) {
+    return { text: `Start large motors one at a time, and let the A/C compressor finish starting before adding another load.` };
+  }
+  // Running over on a dual-fuel unit where gasoline has room → suggest the fuel swap.
+  if (lim.status === 'over' && hasProp && gas.runHead >= 0) {
+    return { text: `Running on <strong>gasoline</strong> adds about <strong>${gas.runHead.toLocaleString()}W</strong> of headroom — or turn off a high-draw appliance.` };
+  }
+  // Single high-draw appliance over the limit → turn it off.
+  if (highOn.length === 1) {
+    return { text: `Turn off <strong>${highOn[0].name}</strong> to get back within the limit.` };
+  }
+  // Near the limit, nothing obvious to shed.
+  if (lim.status === 'near') {
+    return { text: `Avoid adding another large appliance while you're this close to the limit.` };
+  }
+  return { text: `Reduce the load to get back within ${limName}'s capacity.` };
+}
+
+function applyFanRecommendation() {
+  state.appliances['ac_cool'] = false;
+  state.appliances['ac_fan'] = true;
+  const c = document.getElementById('toggle-ac_cool'); if (c) c.checked = false;
+  const f = document.getElementById('toggle-ac_fan');  if (f) f.checked = true;
+  saveState();
+  renderCalculator();
 }
 
 // ── Generator selection ───────────────────────────────────────────────────────
@@ -653,6 +738,7 @@ function buildGeneratorCard() {
       </div>
       <div class="gen-card-badges">${fuelBadgesHTML(g)}</div>
       <div class="gen-card-ratings">${ratings}</div>
+      <div class="gen-card-source"><span class="basis-dot ${g.builtIn ? 'basis-spec' : 'basis-input'}" aria-hidden="true"></span>${g.builtIn ? 'Manufacturer-published spec — verify against your unit' : 'Values you entered'}</div>
     </div>`;
 }
 
@@ -908,13 +994,26 @@ function buildCalculatorHTML() {
     ${buildGeneratorCard()}
 
     <!-- Verdict-first summary -->
-    <div class="card verdict-card" id="verdict-card">
+    <div class="card verdict-card" id="verdict-card" role="status" aria-live="polite">
       <div class="verdict-top">
         <span class="verdict-pill" id="verdict-pill">—</span>
-        <span class="verdict-fuel" id="verdict-fuel"></span>
+        <div class="verdict-top-right">
+          <span class="verdict-conf" id="verdict-conf"></span>
+          <span class="verdict-fuel" id="verdict-fuel"></span>
+        </div>
       </div>
       <div class="verdict-headline" id="verdict-headline">—</div>
       <div class="verdict-why" id="verdict-why"></div>
+
+      <!-- Recommended action (shown for Near / Unsafe) -->
+      <div class="verdict-action" id="verdict-action" style="display:none">
+        <span class="verdict-action-icon" aria-hidden="true">→</span>
+        <div class="verdict-action-body">
+          <div class="verdict-action-text" id="verdict-action-text"></div>
+          <button class="verdict-action-btn" id="verdict-action-btn" style="display:none"></button>
+        </div>
+      </div>
+
       <div class="verdict-metrics">
         <div class="vm"><div class="vm-label">Generator Load</div><div class="vm-val" id="vm-load">—</div></div>
         <div class="vm"><div class="vm-label">Capacity Remaining</div><div class="vm-val" id="vm-remain">—</div></div>
@@ -924,6 +1023,11 @@ function buildCalculatorHTML() {
         <span class="vchip" id="vchip-surge">—</span>
         <span class="vchip" id="vchip-derate">—</span>
       </div>
+
+      <details class="verdict-basis">
+        <summary>What this is based on</summary>
+        <div class="verdict-basis-body" id="verdict-basis-body"></div>
+      </details>
     </div>
 
     <div class="strategy-note">
@@ -2183,6 +2287,36 @@ function ftComboGuidance(hasProp, propane, gas) {
     </ul>`;
 }
 
+// Shared status computation (limiting fuel) used by the landing strip.
+function computeStatus() {
+  const { running, peak } = calcLoads();
+  const derated = deratedGen(state.elevation);
+  const hasProp = genHasPropane();
+  const gas = fuelStatus(running, peak, derated.gas.running, derated.gas.peak);
+  const prop = hasProp ? fuelStatus(running, peak, derated.prop.running, derated.prop.peak) : null;
+  const lim = hasProp ? prop : gas;
+  return { running, lim, fuelName: hasProp ? 'propane' : 'gasoline' };
+}
+
+// Compact "can I run this?" answer on the landing tab, linking to the full verdict.
+function buildLandingStatus() {
+  const { running, lim, fuelName } = computeStatus();
+  const label = lim.status === 'good' ? 'Safe' : lim.status === 'near' ? 'Near Capacity' : 'Unsafe';
+  const icon  = lim.status === 'good' ? '✅' : lim.status === 'near' ? '⚠️' : '⛔';
+  const remain = lim.runHead;
+  const headroom = remain >= 0
+    ? `<strong>${remain.toLocaleString()}W</strong> headroom`
+    : `<strong>${Math.abs(remain).toLocaleString()}W</strong> over`;
+  return `
+    <div class="card land-status v-${lim.status}">
+      <div class="land-status-row">
+        <span class="verdict-pill v-${lim.status}"><span aria-hidden="true">${icon}</span> ${label}</span>
+        <button class="land-status-link" onclick="showTab('calc')">${lim.status === 'good' ? 'Adjust load' : 'What to change'} ›</button>
+      </div>
+      <div class="land-status-detail">Estimated load <strong>${running.toLocaleString()}W</strong> · ${headroom} on ${fuelName}</div>
+    </div>`;
+}
+
 function buildHomeHero() {
   return `
     <div class="gpa-hero">
@@ -2252,6 +2386,9 @@ function renderFuelTrackerTab() {
     : '<span class="ft-src-none">⚠️ No Fuel Source</span>';
 
   panel.innerHTML = `
+    <!-- Answer-first status strip (mirrors the Calculator verdict) -->
+    ${buildLandingStatus()}
+
     <!-- Welcome banner (first-time only) -->
     ${!state.welcomeDismissed ? `
     <div class="welcome-banner" id="welcome-banner">
@@ -2633,6 +2770,7 @@ function toggleTheme() {
 
 // ── Boot ──────────────────────────────────────────────────────────────────────
 window.toggleTheme = toggleTheme;
+window.applyFanRecommendation = applyFanRecommendation;
 window.openGenPicker = openGenPicker;
 window.closeGenPicker = closeGenPicker;
 window.renderGenModal = renderGenModal;

@@ -1872,3 +1872,69 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 .gen-confirm-btns { display: flex; gap: 8px; }
 .gen-confirm-btns .gen-form-save { flex: 1; }
 .gen-confirm-del { width: 100%; margin-top: 10px; }
+
+/* ── Verdict refinements (V1 polish): confidence, action, provenance ── */
+.verdict-top-right { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.verdict-conf {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.64rem; font-weight: 700; letter-spacing: 0.02em;
+  padding: 2px 8px; border-radius: var(--pill); white-space: nowrap;
+  border: 1px solid transparent;
+}
+.verdict-conf::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.conf-high { color: var(--good); background: var(--good-tint); border-color: color-mix(in srgb, var(--good) 26%, transparent); }
+.conf-mod  { color: var(--near); background: var(--near-tint); border-color: color-mix(in srgb, var(--near) 26%, transparent); }
+
+/* Recommended action callout */
+.verdict-action {
+  display: flex; gap: 10px; align-items: flex-start;
+  background: var(--brand-tint); border: 1px solid color-mix(in srgb, var(--brand) 28%, transparent);
+  border-radius: var(--radius-sm); padding: 11px 13px; margin: 0 0 14px;
+}
+.verdict-action-icon { color: var(--brand-text); font-weight: 800; font-size: 1rem; line-height: 1.4; flex: 0 0 auto; }
+.verdict-action-body { flex: 1; min-width: 0; }
+.verdict-action-text { font-size: 0.85rem; line-height: 1.5; color: var(--text); }
+.verdict-action-text strong { font-weight: 700; }
+.verdict-action-btn {
+  margin-top: 9px; display: inline-flex; align-items: center;
+  background: var(--brand); color: #fff; border: none; border-radius: 9px;
+  font-size: 0.78rem; font-weight: 700; padding: 8px 14px; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(47,123,234,0.28);
+}
+.verdict-action-btn:hover { background: var(--brand-strong); }
+
+/* What this is based on */
+.verdict-basis { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 10px; }
+.verdict-basis > summary {
+  cursor: pointer; list-style: none; font-size: 0.72rem; font-weight: 650;
+  color: var(--text-muted); user-select: none; display: inline-flex; align-items: center; gap: 6px;
+}
+.verdict-basis > summary::-webkit-details-marker { display: none; }
+.verdict-basis > summary::before { content: '▸'; font-size: 0.7rem; transition: transform .15s; }
+.verdict-basis[open] > summary::before { content: '▾'; }
+.verdict-basis > summary:hover { color: var(--text); }
+.verdict-basis-body { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.basis-row { display: flex; align-items: flex-start; gap: 9px; font-size: 0.75rem; color: var(--text-muted); line-height: 1.45; }
+.basis-row strong { color: var(--text); font-weight: 650; }
+.basis-dot { flex: 0 0 auto; width: 9px; height: 9px; border-radius: 3px; margin-top: 3px; }
+.basis-spec  { background: var(--good); }         /* manufacturer-published spec */
+.basis-input { background: var(--brand); }        /* user-entered value */
+.basis-est   { background: var(--near); }          /* calculated estimate */
+.basis-obs   { background: var(--text-faint); }    /* observed real-world (to be logged) */
+
+/* ── Landing status strip (answer-first on the default tab) ── */
+.land-status { border-left: 4px solid var(--border); }
+.land-status.v-good { border-left-color: var(--good); }
+.land-status.v-near { border-left-color: var(--near); }
+.land-status.v-over { border-left-color: var(--over); }
+.land-status-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.land-status-link {
+  background: none; border: none; color: var(--brand-text); cursor: pointer;
+  font-size: 0.78rem; font-weight: 700; padding: 4px 2px; white-space: nowrap;
+}
+.land-status-link:hover { text-decoration: underline; }
+.land-status-detail { font-size: 0.82rem; color: var(--text-muted); margin-top: 9px; }
+.land-status-detail strong { color: var(--text); font-weight: 700; }
+
+.gen-card-source { display: flex; align-items: center; gap: 7px; font-size: 0.68rem; color: var(--text-faint); margin-top: 9px; }
+.gen-card-source .basis-dot { margin-top: 0; }
