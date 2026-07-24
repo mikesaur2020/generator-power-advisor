@@ -875,7 +875,7 @@ function buildGeneratorCard() {
           <div class="gen-card-name">${escHtml(g.short)}${g.builtIn ? '' : ' <span class="gen-custom-tag">custom</span>'}</div>
           <div class="gen-card-kind">${escHtml(g.kind)}</div>
         </div>
-        <button class="gen-change-btn" onclick="openGenPicker()">${confirmed ? 'Change' : 'Set yours'}</button>
+        <button class="gen-change-btn" onclick="openGenPicker()">${confirmed ? 'Change' : 'Set your generator'}</button>
       </div>
       <div class="gen-card-badges">${fuelBadgesHTML(g)}</div>
       <div class="gen-card-ratings">${ratings}</div>
@@ -1152,6 +1152,13 @@ function buildCalculatorHTML() {
 
     ${buildGeneratorCard()}
 
+    <!-- Presets -->
+    <div class="card preset-card">
+      <h2>Quick Presets</h2>
+      <div class="preset-btn-row" id="preset-btn-row"></div>
+      <div class="preset-combo-row" id="preset-combo-row" style="display:none"></div>
+    </div>
+
     <!-- Verdict-first summary -->
     <div class="card verdict-card" id="verdict-card" role="status" aria-live="polite">
       <button class="verdict-example" id="verdict-example" style="display:none" onclick="openGenPicker()"></button>
@@ -1191,13 +1198,6 @@ function buildCalculatorHTML() {
         <summary>What this is based on</summary>
         <div class="verdict-basis-body" id="verdict-basis-body"></div>
       </details>
-    </div>
-
-    <!-- Presets -->
-    <div class="card preset-card">
-      <h2>Quick Presets</h2>
-      <div class="preset-btn-row" id="preset-btn-row"></div>
-      <div class="preset-combo-row" id="preset-combo-row" style="display:none"></div>
     </div>
 
     <!-- Elevation -->
