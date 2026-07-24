@@ -1,0 +1,29 @@
+{
+  "name": "generator-power-advisor",
+  "version": "1.0.0",
+  "description": "**Know what you can safely run.** An installable, offline-capable Progressive Web App (PWA) that turns a portable generator's real-world capacity — running load, largest startup surge, elevation derating, and remaining fuel — into a clear **Safe / Near Capacity / Unsafe** answer, the reason behind it, and what to change.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:ios": "./scripts/build-ios.sh",
+    "sync:ios": "npm run build:ios && npx cap sync ios",
+    "open:ios": "npm run sync:ios && npx cap open ios"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mikesaur2020/generator-power-advisor.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/mikesaur2020/generator-power-advisor/issues"
+  },
+  "homepage": "https://github.com/mikesaur2020/generator-power-advisor#readme",
+  "dependencies": {
+    "@capacitor/cli": "^8.4.2",
+    "@capacitor/core": "^8.4.2",
+    "@capacitor/ios": "^8.4.2"
+  }
+}
