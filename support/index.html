@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0c1420" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#eef2f7" media="(prefers-color-scheme: light)">
+  <title>Support | Generator Power Advisor</title>
+  <meta name="description" content="Support for Generator Power Advisor (GPA): how to contact us, what to include in a request, frequently asked questions, and privacy information.">
+  <link rel="canonical" href="https://mikesaur2020.github.io/generator-power-advisor/support/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Support | Generator Power Advisor">
+  <meta property="og:description" content="Get help with Generator Power Advisor — contact, troubleshooting tips, and frequently asked questions.">
+  <meta property="og:url" content="https://mikesaur2020.github.io/generator-power-advisor/support/">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <!-- Reuse the app's shared design system (tokens, colors, typography, base) -->
+  <link rel="stylesheet" href="../style.css">
+  <script>
+    // Match the app's saved light/dark choice if present. Progressive enhancement:
+    // with JavaScript disabled the page still renders correctly via prefers-color-scheme.
+    (function () {
+      try {
+        var t = localStorage.getItem('gpaTheme');
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    /* Page-specific document layout, built on the shared design tokens. */
+    .legal-wrap { max-width: 760px; margin: 0 auto; padding: 20px max(16px, env(safe-area-inset-left)) 48px; }
+    .legal-header { display: flex; align-items: center; gap: 12px; padding: 6px 0 18px; }
+    .legal-mark {
+      flex: 0 0 auto; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+      background: linear-gradient(150deg, var(--brand) 0%, var(--brand-strong) 100%);
+      box-shadow: 0 4px 14px rgba(47,123,234,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+    }
+    .legal-mark svg { width: 26px; height: 26px; display: block; }
+    .legal-brand-name { font-size: 1.05rem; font-weight: 750; letter-spacing: -0.01em; color: var(--text); line-height: 1.15; }
+    .legal-brand-name .gpa-tag { color: var(--brand-text); font-weight: 800; }
+    .legal-brand-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
+
+    .legal-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-1); padding: 26px 24px; }
+    .legal-card h1 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text); line-height: 1.15; margin: 0 0 8px; }
+    .legal-backlink { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 650; color: var(--brand-text); text-decoration: none; margin-top: 6px; }
+    .legal-backlink:hover { text-decoration: underline; }
+
+    .legal-card h2 {
+      font-size: 1.02rem; font-weight: 750; color: var(--text); letter-spacing: -0.01em;
+      margin: 28px 0 8px; padding-top: 18px; border-top: 1px solid var(--border);
+    }
+    .legal-card h2:first-of-type { border-top: none; padding-top: 0; }
+    .legal-card h3 { font-size: 0.92rem; font-weight: 700; color: var(--text); margin: 16px 0 4px; }
+    .legal-card p, .legal-card li { font-size: 0.9rem; line-height: 1.62; color: var(--text-muted); }
+    .legal-card p { margin: 0 0 12px; }
+    .legal-card strong { color: var(--text); font-weight: 650; }
+    .legal-card ul { margin: 0 0 12px; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; }
+    .legal-card a { color: var(--brand-text); font-weight: 600; }
+    .legal-intro { font-size: 0.95rem !important; color: var(--text) !important; }
+
+    .support-cta {
+      display: inline-flex; align-items: center; gap: 8px; margin: 4px 0 6px;
+      background: var(--brand); color: #fff; border-radius: 10px;
+      font-size: 0.9rem; font-weight: 700; padding: 10px 16px; text-decoration: none;
+      box-shadow: 0 2px 8px rgba(47,123,234,0.28);
+    }
+    .support-cta:hover { background: var(--brand-strong); }
+    .support-note { font-size: 0.8rem; color: var(--text-faint); line-height: 1.55; }
+
+    .legal-footer { text-align: center; font-size: 0.75rem; color: var(--text-faint); margin-top: 24px; line-height: 1.7; }
+    .legal-footer a { color: var(--brand-text); text-decoration: none; }
+    .legal-footer a:hover { text-decoration: underline; }
+
+    @media (min-width: 640px) { .legal-card { padding: 32px 34px; } }
+  </style>
+</head>
+<body>
+  <div class="legal-wrap">
+    <header class="legal-header">
+      <div class="legal-mark">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="50" cy="50" r="30" fill="none" stroke="#fff" stroke-width="7" stroke-opacity="0.95"/>
+          <path d="M57 24 L34 53 H51 L44 76 L67 45 H49 L60 24 Z" fill="#fff"/>
+        </svg>
+      </div>
+      <div>
+        <div class="legal-brand-name">Generator Power Advisor <span class="gpa-tag">GPA</span></div>
+        <div class="legal-brand-sub">Know what you can safely run</div>
+      </div>
+    </header>
+
+    <main class="legal-card">
+      <h1>Support</h1>
+      <a class="legal-backlink" href="../">‹ Back to Generator Power Advisor</a>
+
+      <h2>How can we help?</h2>
+      <p class="legal-intro">
+        This page provides help, contact information, and troubleshooting resources for Generator Power
+        Advisor — the app that estimates what you can safely run on a portable generator. If something isn't
+        working, or you have a question, the answers below and the contact option should get you sorted.
+      </p>
+
+      <h2>Contact Support</h2>
+      <p>
+        Email us and we'll be glad to help:
+      </p>
+      <p>
+        <a class="support-cta" href="mailto:support@dmsaur.com?subject=Generator%20Power%20Advisor%20Support">Email support@dmsaur.com</a>
+      </p>
+      <p class="support-note">
+        The subject line is pre-filled with “Generator Power Advisor Support.” Please don't send passwords,
+        payment details, or other sensitive personal information — we never need them.
+      </p>
+
+      <h2>What to Include in a Support Request</h2>
+      <p>To help us resolve your issue quickly, please include as much of the following as you can:</p>
+      <ul>
+        <li>App version (shown on the app's About screen)</li>
+        <li>Device type (for example, iPhone 15, Pixel 8, or a desktop/laptop browser)</li>
+        <li>Platform: iOS, Android, or web</li>
+        <li>Operating-system version (for example, iOS 17.5 or Android 14)</li>
+        <li>Your generator model, when the question relates to a specific unit</li>
+        <li>A clear description of the problem</li>
+        <li>The steps to reproduce it</li>
+        <li>Screenshots, when they help illustrate the issue</li>
+      </ul>
+
+      <h2>Frequently Asked Questions</h2>
+
+      <h3>Does the app require an account?</h3>
+      <p>No. Generator Power Advisor does not require an account, sign-in, or personal profile. Everything works without one.</p>
+
+      <h3>Where is my information stored?</h3>
+      <p>Your generators, appliance selections, preferences, and records are stored locally on your own device using standard browser or application storage. There is no server that collects this information.</p>
+
+      <h3>Does the app work offline?</h3>
+      <p>Yes. The core calculator, generator database, and guidance work offline. Optional features that fetch live data — elevation, weather, and ZIP-code lookup — need an internet connection, but you can enter those values manually instead.</p>
+
+      <h3>Why does the app request location?</h3>
+      <p>Only when you tap a location feature — for example, to estimate your elevation (which affects a generator's output) or to retrieve tonight's forecast low temperature. Location is used only to complete that request and is not tracked in the background.</p>
+
+      <h3>Can I use the app without sharing my location?</h3>
+      <p>Yes. If you decline location, the app keeps working — you can type an elevation in feet or enter a ZIP code for the forecast. No feature is locked behind location access except the automatic lookups themselves.</p>
+
+      <h3>How do I remove locally stored information?</h3>
+      <p>Within the app you can delete individual custom generators, delete real-world test entries, and reset the Fuel Tracker. To remove <strong>all</strong> locally stored data, clear the app's or browser's site/application storage, or uninstall the app.</p>
+
+      <h3>Are the load calculations a guarantee that a generator or appliance combination is safe?</h3>
+      <p>
+        No. Generator Power Advisor provides <strong>estimates and planning guidance</strong>, not a guarantee
+        and not a substitute for your generator's manual, appliance documentation, a licensed electrician,
+        the manufacturer's specifications, or applicable electrical and safety requirements. Real-world output
+        varies with temperature, elevation, fuel, condition, and load. Always follow your equipment
+        documentation and local safety requirements, and never operate a generator in an enclosed or unsafe
+        space — carbon monoxide is odorless and deadly.
+      </p>
+
+      <h2>Privacy</h2>
+      <p>
+        For details on how your information is handled, see the
+        <a href="../privacy/">Privacy Policy</a>.
+      </p>
+
+      <h2>Report a Bug or Request a Feature</h2>
+      <p>
+        Found a bug or have an idea? Email
+        <a href="mailto:support@dmsaur.com?subject=Generator%20Power%20Advisor%20Feedback">support@dmsaur.com</a>
+        with a description and, for bugs, the details listed above. We read every message.
+      </p>
+
+      <h2>Application</h2>
+      <p>
+        Return to the app: <a href="../">Open Generator Power Advisor</a>.
+      </p>
+
+      <a class="legal-backlink" href="../">‹ Back to Generator Power Advisor</a>
+    </main>
+
+    <div class="legal-footer">
+      <a href="../">Generator Power Advisor</a> ·
+      <a href="./">Support</a> ·
+      <a href="../privacy/">Privacy Policy</a> ·
+      <a href="mailto:support@dmsaur.com?subject=Generator%20Power%20Advisor%20Support">support@dmsaur.com</a>
+    </div>
+  </div>
+</body>
+</html>
