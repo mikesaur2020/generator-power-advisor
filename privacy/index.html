@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0c1420" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#eef2f7" media="(prefers-color-scheme: light)">
+  <title>Privacy Policy | Generator Power Advisor</title>
+  <meta name="description" content="Privacy Policy for Generator Power Advisor (GPA). No account, no ads, no tracking — your data stays on your device. Learn how location and environmental features work.">
+  <link rel="canonical" href="https://mikesaur2020.github.io/generator-power-advisor/privacy/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Privacy Policy | Generator Power Advisor">
+  <meta property="og:description" content="No account, no ads, no tracking — your data stays on your device. How Generator Power Advisor handles location and environmental information.">
+  <meta property="og:url" content="https://mikesaur2020.github.io/generator-power-advisor/privacy/">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <!-- Reuse the app's shared design system (tokens, colors, typography, base, .card) -->
+  <link rel="stylesheet" href="../style.css">
+  <script>
+    // Match the app's saved light/dark choice if present. Progressive enhancement:
+    // with JavaScript disabled the page still renders correctly via prefers-color-scheme.
+    (function () {
+      try {
+        var t = localStorage.getItem('gpaTheme');
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    /* Page-specific document layout, built on the shared design tokens. */
+    .legal-wrap { max-width: 760px; margin: 0 auto; padding: 20px max(16px, env(safe-area-inset-left)) 48px; }
+    .legal-header { display: flex; align-items: center; gap: 12px; padding: 6px 0 18px; }
+    .legal-mark {
+      flex: 0 0 auto; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+      background: linear-gradient(150deg, var(--brand) 0%, var(--brand-strong) 100%);
+      box-shadow: 0 4px 14px rgba(47,123,234,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+    }
+    .legal-mark svg { width: 26px; height: 26px; display: block; }
+    .legal-brand-name { font-size: 1.05rem; font-weight: 750; letter-spacing: -0.01em; color: var(--text); line-height: 1.15; }
+    .legal-brand-name .gpa-tag { color: var(--brand-text); font-weight: 800; }
+    .legal-brand-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
+
+    .legal-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-1); padding: 26px 24px; }
+    .legal-card h1 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text); line-height: 1.15; margin: 0 0 6px; }
+    .legal-dates { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; }
+    .legal-dates strong { color: var(--text); font-weight: 650; }
+    .legal-backlink { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 650; color: var(--brand-text); text-decoration: none; margin-top: 12px; }
+    .legal-backlink:hover { text-decoration: underline; }
+
+    .legal-card h2 {
+      font-size: 1.02rem; font-weight: 750; color: var(--text); letter-spacing: -0.01em;
+      margin: 28px 0 8px; padding-top: 18px; border-top: 1px solid var(--border);
+    }
+    .legal-card h2:first-of-type { border-top: none; padding-top: 0; }
+    .legal-card p, .legal-card li { font-size: 0.9rem; line-height: 1.62; color: var(--text-muted); }
+    .legal-card p { margin: 0 0 12px; }
+    .legal-card strong { color: var(--text); font-weight: 650; }
+    .legal-card ul { margin: 0 0 12px; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; }
+    .legal-card a { color: var(--brand-text); font-weight: 600; }
+    .legal-intro { font-size: 0.95rem !important; color: var(--text) !important; }
+    .legal-note { font-size: 0.8rem; color: var(--text-faint); line-height: 1.55; margin-top: 6px; }
+
+    .legal-footer { text-align: center; font-size: 0.75rem; color: var(--text-faint); margin-top: 24px; line-height: 1.6; }
+    .legal-footer a { color: var(--brand-text); text-decoration: none; }
+    .legal-footer a:hover { text-decoration: underline; }
+
+    @media (min-width: 640px) { .legal-card { padding: 32px 34px; } }
+  </style>
+</head>
+<body>
+  <div class="legal-wrap">
+    <header class="legal-header">
+      <div class="legal-mark">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="50" cy="50" r="30" fill="none" stroke="#fff" stroke-width="7" stroke-opacity="0.95"/>
+          <path d="M57 24 L34 53 H51 L44 76 L67 45 H49 L60 24 Z" fill="#fff"/>
+        </svg>
+      </div>
+      <div>
+        <div class="legal-brand-name">Generator Power Advisor <span class="gpa-tag">GPA</span></div>
+        <div class="legal-brand-sub">Know what you can safely run</div>
+      </div>
+    </header>
+
+    <main class="legal-card">
+      <h1>Privacy Policy</h1>
+      <p class="legal-dates"><strong>Effective date:</strong> July 27, 2026</p>
+      <p class="legal-dates"><strong>Last updated:</strong> July 27, 2026</p>
+      <a class="legal-backlink" href="../">‹ Back to Generator Power Advisor</a>
+
+      <h2>Introduction</h2>
+      <p class="legal-intro">
+        Generator Power Advisor (“GPA”, “the app”, “we”) helps you estimate what you can safely run on a
+        portable generator. This policy explains what information the app handles and how. In plain terms:
+        <strong>the app has no user accounts, shows no ads, does not track you, and keeps your data on your
+        own device.</strong> The app only contacts outside services when you choose to use an optional
+        location or environmental feature, as described below.
+      </p>
+
+      <h2>Information You Provide</h2>
+      <p>
+        The app does not require an account, sign-in, email address, or personal profile. The information you
+        enter — such as your generator selection, custom generator specifications, which appliances are on,
+        battery and charging settings, elevation, fuel configuration, quick presets, and real-world test
+        records — is used only to produce the estimates you see on screen. You are not asked for your name,
+        contact details, or payment information.
+      </p>
+
+      <h2>Information Stored on Your Device</h2>
+      <p>
+        Your generator selections, appliance selections, preferences, theme choice, fuel records, real-world
+        tests, and related app data are stored <strong>locally on your device</strong> using standard browser
+        or application storage (for example, <code>localStorage</code>). This information stays on your device.
+        The developer does not operate a server that collects or receives this information, and it is not sent
+        to us.
+      </p>
+
+      <h2>Location and Environmental Information</h2>
+      <p>
+        Some optional features can use your location to improve environmental calculations — for example,
+        estimating your elevation (which affects a generator's output) or retrieving tonight's forecast low
+        temperature (which can affect fuel performance).
+      </p>
+      <ul>
+        <li>Location is requested <strong>only when you voluntarily tap a location feature</strong> (such as “Use My Location”). It is <strong>not</strong> collected in the background and is <strong>not</strong> continuously tracked.</li>
+        <li>If you deny location permission, the app continues to work — you can enter the relevant information manually (for example, typing an elevation in feet, or entering a ZIP code for the forecast).</li>
+        <li>Approximate coordinates or a ZIP code you enter are used to complete the request and are not stored on our servers, because we do not operate one.</li>
+      </ul>
+
+      <h2>Third-Party Services</h2>
+      <p>
+        When you use a location or environmental feature, the app contacts the following third-party services
+        over a secure (HTTPS) connection to complete your request:
+      </p>
+      <ul>
+        <li><strong>Open-Elevation</strong> (<code>api.open-elevation.com</code>) — used to estimate elevation from approximate coordinates.</li>
+        <li><strong>Open-Meteo</strong> (<code>api.open-meteo.com</code>) — used to retrieve a local forecast low temperature from approximate coordinates.</li>
+        <li><strong>Zippopotam.us</strong> (<code>api.zippopotam.us</code>) — used to convert a U.S. ZIP code you enter into approximate coordinates for the forecast feature.</li>
+      </ul>
+      <p>
+        To fulfill a request, the app may send data that is technically necessary to that service, such as the
+        approximate coordinates (or the ZIP code you entered) and, as with any internet request, your device's
+        IP address. These services are operated by third parties and process such requests under their own
+        privacy practices. The app does not send your saved generator, appliance, or test data to these
+        services.
+      </p>
+      <p class="legal-note">
+        No API keys or personal identifiers are attached to these requests, and these features are used only
+        when you choose to.
+      </p>
+
+      <h2>Analytics, Advertising, and Tracking</h2>
+      <p>
+        The app does <strong>not</strong> include third-party analytics, advertising, or cross-app/cross-site
+        tracking. There are no advertising identifiers, no ad networks, and no marketing trackers. We do not
+        build advertising or marketing profiles about you.
+      </p>
+
+      <h2>How Information Is Used</h2>
+      <p>
+        Information is used only to make the app work for you: to calculate and display generator load, safety
+        margin, runtime, and related guidance; to remember your settings between sessions on your device; and,
+        when you use an optional location or environmental feature, to complete that specific request. We do
+        not use your information for advertising, profiling, or tracking.
+      </p>
+
+      <h2>Data Sharing</h2>
+      <p>
+        We do not sell your personal information, and we do not share it for advertising or marketing. Because
+        your app data stays on your device, there is normally no personal information for us to share. The only
+        outbound data is what you send to the environmental services above when you choose to use those
+        features. We may disclose information if required to comply with a valid legal obligation, but we hold
+        no server-side personal data to disclose.
+      </p>
+
+      <h2>Data Retention and Deletion</h2>
+      <p>
+        Because your data is stored locally, it remains on your device until you remove it. You control it:
+      </p>
+      <ul>
+        <li>Within the app, you can delete individual custom generators, delete real-world test entries, reset the Fuel Tracker session, and restore the built-in presets.</li>
+        <li>To remove <strong>all</strong> locally stored app data, clear the app's or browser's site/application storage, or uninstall the app.</li>
+      </ul>
+      <p>
+        We do not retain this information on a server because we do not collect it there.
+      </p>
+
+      <h2>Data Security</h2>
+      <p>
+        Your app data is kept on your device rather than on our servers, and requests to the environmental
+        services listed above are made over secure (HTTPS) connections. No method of storage or transmission
+        is completely secure, so while we take reasonable care, we cannot guarantee absolute security. Keeping
+        your device and operating system up to date helps protect information stored on it.
+      </p>
+
+      <h2>Children's Privacy</h2>
+      <p>
+        Generator Power Advisor is a general-purpose utility and is not directed to children under 13. We do
+        not knowingly collect personal information from children. Because the app does not require an account
+        and stores data locally, it does not gather personal details from any user.
+      </p>
+
+      <h2>External Links</h2>
+      <p>
+        The app and this page may link to third-party websites, such as the environmental services above or an
+        app store listing. We are not responsible for the content or privacy practices of those sites, and we
+        encourage you to review their policies.
+      </p>
+
+      <h2>App Store Distribution</h2>
+      <p>
+        When you install Generator Power Advisor from the Apple App Store or Google Play, Apple or Google may
+        collect basic diagnostic, installation, or distribution data under their own policies as part of
+        operating their platforms. That collection is governed by Apple's and Google's privacy policies, not
+        by us.
+      </p>
+
+      <h2>Changes to This Privacy Policy</h2>
+      <p>
+        We may update this Privacy Policy from time to time. When we do, we will revise the “Last updated” date
+        at the top of this page. Significant changes will be reflected here, and continued use of the app after
+        an update means you accept the revised policy.
+      </p>
+
+      <h2>Contact Information</h2>
+      <p>
+        If you have questions about this Privacy Policy, you can reach us at:
+      </p>
+      <ul>
+        <li><strong>Email:</strong> <a href="mailto:support@dmsaur.com?subject=Generator%20Power%20Advisor%20Privacy">support@dmsaur.com</a></li>
+        <li><strong>Support:</strong> <a href="../support/">Generator Power Advisor Support page</a></li>
+        <li><strong>App:</strong> <a href="../">Generator Power Advisor</a></li>
+      </ul>
+
+      <a class="legal-backlink" href="../">‹ Back to Generator Power Advisor</a>
+    </main>
+
+    <div class="legal-footer">
+      <a href="../">Generator Power Advisor</a> · <a href="../support/">Support</a> · <a href="mailto:support@dmsaur.com?subject=Generator%20Power%20Advisor%20Privacy">Contact</a><br>
+      This policy describes the app's current behavior and does not create rights beyond applicable law.
+    </div>
+  </div>
+</body>
+</html>

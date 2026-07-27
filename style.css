@@ -2040,3 +2040,8 @@ nav button { display: inline-flex; align-items: center; }
 /* ── Privacy screen link ── */
 .privacy-policy-link { color: var(--brand-text); font-weight: 650; text-decoration: none; }
 .privacy-policy-link:hover { text-decoration: underline; }
+
+/* ── About page: Privacy / Support / Contact links ── */
+.about-links { text-align: center; font-size: 0.75rem; color: var(--text-faint); padding: 12px 12px 0; line-height: 1.7; }
+.about-links a { color: var(--brand-text); text-decoration: none; font-weight: 600; }
+.about-links a:hover { text-decoration: underline; }

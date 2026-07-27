@@ -1856,8 +1856,7 @@ function buildAboutHTML() {
           <li><span>${ic('check')}</span><span>If you use a location feature, your location is requested <strong>only to improve environmental calculations</strong> (elevation and tonight's forecast). It is <strong>never used for advertising or tracking.</strong></span></li>
         </ul>
         <p style="font-size:0.75rem;line-height:1.6;margin-top:10px;">
-          <!-- RELEASE: replace the href below with the production Privacy Policy URL before store submission -->
-          <a class="privacy-policy-link" href="https://generator-power-advisor.app/privacy" target="_blank" rel="noopener">Read the full Privacy Policy →</a>
+          <a class="privacy-policy-link" href="https://mikesaur2020.github.io/generator-power-advisor/privacy/" target="_blank" rel="noopener">Read the full Privacy Policy →</a>
         </p>
       </div>
     </div>
@@ -1871,6 +1870,11 @@ function buildAboutHTML() {
       </div>
     </div>
 
+    <div class="about-links">
+      <a href="https://mikesaur2020.github.io/generator-power-advisor/support/" target="_blank" rel="noopener">Support</a> ·
+      <a href="https://mikesaur2020.github.io/generator-power-advisor/privacy/" target="_blank" rel="noopener">Privacy Policy</a> ·
+      <a href="mailto:support@dmsaur.com?subject=Generator%20Power%20Advisor%20Support">Contact</a>
+    </div>
     <div class="version">Generator Power Advisor (GPA) · Know what you can safely run<br>Tuned for WEN DF360iX + Coachmen Apex 28RBS · Offline-capable PWA</div>
   `;
 }
