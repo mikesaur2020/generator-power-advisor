@@ -1139,7 +1139,7 @@ function buildCalculatorHTML() {
     ${!state.welcomeDismissed ? `
     <div class="card onboard-card" id="onboard-card">
       <div class="onboard-head">
-        <span class="onboard-title">New to GPA? Three steps</span>
+        <span class="onboard-title">New here? Three steps</span>
         <button class="onboard-dismiss" onclick="dismissWelcome()">Got it</button>
       </div>
       <p class="onboard-sub">For home backup &amp; outages, RVs, job sites, cabins, farms, tailgating, and off-grid.</p>
@@ -1785,7 +1785,7 @@ function buildAboutHTML() {
       <div class="about-section">
         <h3>About Generator Power Advisor</h3>
         <p style="font-size:0.8rem;color:var(--text-muted);line-height:1.6;">
-          <strong>Generator Power Advisor (GPA)</strong> helps you decide what you can safely
+          <strong>Generator Power Advisor</strong> helps you decide what you can safely
           power with a portable generator under real-world conditions — weighing running load,
           the largest startup surge, elevation derating, and remaining fuel to give you a clear
           <strong>Safe / Near Capacity / Unsafe</strong> answer, the reason behind it, and what to change.
@@ -1875,7 +1875,7 @@ function buildAboutHTML() {
       <a href="https://mikesaur2020.github.io/generator-power-advisor/privacy/" target="_blank" rel="noopener">Privacy Policy</a> ·
       <a href="mailto:support@dmsaur.com?subject=Generator%20Power%20Advisor%20Support">Contact</a>
     </div>
-    <div class="version">Generator Power Advisor (GPA) · Know what you can safely run<br>Tuned for WEN DF360iX + Coachmen Apex 28RBS · Offline-capable PWA</div>
+    <div class="version">Generator Power Advisor · Know what you can safely run<br>Tuned for WEN DF360iX + Coachmen Apex 28RBS · Offline-capable PWA</div>
   `;
 }
 
@@ -2510,7 +2510,7 @@ function buildHomeHero() {
         Generator Power Advisor
       </div>
       <h2 class="gpa-hero-title">Know what you can safely run.</h2>
-      <p class="gpa-hero-sub">Whether it's a home outage, a job site, an RV, a cabin, or off-grid — GPA turns your generator's real-world capacity, accounting for startup surge, elevation, and fuel, into clear, confident decisions. No signal required.</p>
+      <p class="gpa-hero-sub">Whether it's a home outage, a job site, an RV, a cabin, or off-grid — Generator Power Advisor turns your generator's real-world capacity, accounting for startup surge, elevation, and fuel, into clear, confident decisions. No signal required.</p>
       <div class="gpa-hero-metrics">
         <span class="gpa-hero-chip">${ic('bolt')} <b>Dual-fuel</b> aware</span>
         <span class="gpa-hero-chip">${ic('mountain')} <b>Elevation</b> derated</span>
