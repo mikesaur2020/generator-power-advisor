@@ -1,12 +1,14 @@
-const CACHE_NAME = 'gpa-v31';
+const CACHE_NAME = 'gpa-v32';
 const ASSETS = [
   './',
   './index.html',
-  './style.css?v=gpa11',
-  './app.js?v=gpa11',
+  './style.css?v=gpa12',
+  './app.js?v=gpa12',
   './manifest.json',
   './favicon.svg',
   './favicon-32.png',
+  './favicon-16.png',
+  './favicon.ico',
   './apple-touch-icon.png',
   './icon-192.png',
   './icon-512.png'

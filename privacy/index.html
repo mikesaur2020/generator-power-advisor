@@ -33,12 +33,11 @@
     .legal-header { display: flex; align-items: center; gap: 12px; padding: 6px 0 18px; }
     .legal-mark {
       flex: 0 0 auto; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
-      background: linear-gradient(150deg, var(--brand) 0%, var(--brand-strong) 100%);
-      box-shadow: 0 4px 14px rgba(47,123,234,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+      background: linear-gradient(155deg, #3C536B 0%, #283A4E 100%);
+      box-shadow: 0 4px 14px rgba(20,31,46,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
     }
-    .legal-mark svg { width: 26px; height: 26px; display: block; }
+    .legal-mark svg { width: 30px; height: 30px; display: block; }
     .legal-brand-name { font-size: 1.05rem; font-weight: 750; letter-spacing: -0.01em; color: var(--text); line-height: 1.15; }
-    .legal-brand-name .gpa-tag { color: var(--brand-text); font-weight: 800; }
     .legal-brand-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
 
     .legal-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-1); padding: 26px 24px; }
@@ -73,12 +72,16 @@
     <header class="legal-header">
       <div class="legal-mark">
         <svg viewBox="0 0 100 100" aria-hidden="true">
-          <circle cx="50" cy="50" r="30" fill="none" stroke="#fff" stroke-width="7" stroke-opacity="0.95"/>
-          <path d="M57 24 L34 53 H51 L44 76 L67 45 H49 L60 24 Z" fill="#fff"/>
+          <g fill="none" stroke-width="9" stroke-linecap="round">
+            <path d="M31.9 73.4 A28 28 0 0 1 62.6 24.6" stroke="#5FA878"/>
+            <path d="M62.6 24.6 A28 28 0 0 1 74.9 43.2" stroke="#D6A05A"/>
+            <path d="M74.9 43.2 A28 28 0 0 1 68.1 73.4" stroke="#C05B54"/>
+          </g>
+          <path d="M55.6 30 L37.9 54.4 H50.5 L40.1 73 L64.5 46.8 H51.1 L58 30 Z" fill="#fff"/>
         </svg>
       </div>
       <div>
-        <div class="legal-brand-name">Generator Power Advisor <span class="gpa-tag">GPA</span></div>
+        <div class="legal-brand-name">Generator Power Advisor</div>
         <div class="legal-brand-sub">Know what you can safely run</div>
       </div>
     </header>

@@ -1,5 +1,5 @@
 /* ============================================================================
-   Generator Power Advisor (GPA) — Design System
+   Generator Power Advisor — Design System
    Brand: Deep Slate + Trust Blue. Green / Amber / Red are reserved EXCLUSIVELY
    for status (Safe / Near Capacity / Unsafe). Never use them for brand or chrome.
    ========================================================================== */
@@ -170,10 +170,10 @@ header {
   width: 40px; height: 40px;
   border-radius: 11px;
   display: grid; place-items: center;
-  background: linear-gradient(150deg, var(--brand) 0%, var(--brand-strong) 100%);
-  box-shadow: 0 4px 14px rgba(47,123,234,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+  background: linear-gradient(155deg, #3C536B 0%, #283A4E 100%);
+  box-shadow: 0 4px 14px rgba(20,31,46,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
 }
-.brand-mark svg { width: 24px; height: 24px; display: block; }
+.brand-mark svg { width: 28px; height: 28px; display: block; }
 .brand-text { min-width: 0; }
 header h1 {
   font-size: 1.02rem;
@@ -184,11 +184,6 @@ header h1 {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-header h1 .gpa-tag {
-  color: var(--brand-text);
-  font-weight: 800;
-  letter-spacing: 0.02em;
 }
 header p {
   font-size: 0.68rem;
@@ -1628,7 +1623,7 @@ td textarea { resize: vertical; min-height: 36px; }
 .shore-rec-btn:hover { opacity: 0.9; }
 
 /* ============================================================================
-   GPA Phase 1 — new components & polish (appended)
+   Phase 1 — new components & polish (appended)
    ========================================================================== */
 
 /* Accessibility: visible keyboard focus everywhere */
@@ -1763,16 +1758,15 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   .gpa-hero h2.gpa-hero-title { font-size: 1.8rem; }
 }
 
-/* ── Header responsive: on narrow screens collapse to mark + GPA wordmark ── */
+/* ── Header responsive: on narrow screens show mark + full wordmark ── */
 @media (max-width: 600px) {
-  .brand-full { display: none; }
-  header h1 { font-size: 1rem; }
-  header h1 .gpa-tag { font-size: 1.12rem; }
+  .header-main { flex-direction: column; align-items: stretch; gap: 10px; }
+  header h1 { font-size: 1.05rem; white-space: normal; }
   header p { display: none; }
   .brand-mark { width: 36px; height: 36px; border-radius: 10px; }
-  .brand-mark svg { width: 21px; height: 21px; }
+  .brand-mark svg { width: 25px; height: 25px; }
+  .header-btn-group { justify-content: flex-start; flex-wrap: wrap; gap: 6px; }
   .header-help-btn, .header-manage-btn, .header-collapse-btn { padding: 8px 11px; font-size: 0.72rem; }
-  .header-btn-group { gap: 5px; }
 }
 
 /* ── Generator selection (Phase 2) ── */
