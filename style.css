@@ -170,10 +170,10 @@ header {
   width: 40px; height: 40px;
   border-radius: 11px;
   display: grid; place-items: center;
-  background: linear-gradient(150deg, var(--brand) 0%, var(--brand-strong) 100%);
-  box-shadow: 0 4px 14px rgba(47,123,234,0.35), inset 0 1px 0 rgba(255,255,255,0.25);
+  background: linear-gradient(155deg, #3C536B 0%, #283A4E 100%);
+  box-shadow: 0 4px 14px rgba(20,31,46,0.45), inset 0 1px 0 rgba(255,255,255,0.18);
 }
-.brand-mark svg { width: 24px; height: 24px; display: block; }
+.brand-mark svg { width: 28px; height: 28px; display: block; }
 .brand-text { min-width: 0; }
 header h1 {
   font-size: 1.02rem;
@@ -1765,7 +1765,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   header h1 { font-size: 1.05rem; white-space: normal; }
   header p { display: none; }
   .brand-mark { width: 36px; height: 36px; border-radius: 10px; }
-  .brand-mark svg { width: 21px; height: 21px; }
+  .brand-mark svg { width: 25px; height: 25px; }
   .header-btn-group { justify-content: flex-start; flex-wrap: wrap; gap: 6px; }
   .header-help-btn, .header-manage-btn, .header-collapse-btn { padding: 8px 11px; font-size: 0.72rem; }
 }
